@@ -1,0 +1,12 @@
+{
+  "name": "StackSpot AI",
+  "domain": "stackspot",
+  "config_flow": true,
+  "requirements": [],
+  "iot_class": "cloud_polling",
+  "after_dependencies": ["conversation"],
+  "dependencies": ["conversation"],
+  "codeowners": ["@alves-dev"],
+  "documentation": "https://github.com/alves-dev/stackspot-homeassistant",
+  "version": "0.0.1"
+}
