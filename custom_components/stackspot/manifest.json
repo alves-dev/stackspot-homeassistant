@@ -1,12 +1,19 @@
 {
-  "name": "StackSpot AI",
-  "domain": "stackspot",
+  "after_dependencies": [
+    "conversation"
+  ],
+  "codeowners": [
+    "@alves-dev"
+  ],
   "config_flow": true,
-  "requirements": [],
-  "iot_class": "cloud_polling",
-  "after_dependencies": ["conversation"],
-  "dependencies": ["conversation"],
-  "codeowners": ["@alves-dev"],
+  "dependencies": [
+    "conversation"
+  ],
   "documentation": "https://github.com/alves-dev/stackspot-homeassistant",
+  "domain": "stackspot",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/alves-dev/stackspot-homeassistant/issues",
+  "name": "StackSpot AI",
+  "requirements": [],
   "version": "0.0.1"
 }

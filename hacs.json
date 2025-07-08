@@ -1,11 +1,3 @@
 {
-  "name": "StackSpot AI",
-  "domain": "stackspot",
-  "documentation": "https://github.com/alves-dev/stackspot-homeassistant",
-  "codeowners": ["@alves-dev"],
-  "issue_tracker": "https://github.com/alves-dev/stackspot-homeassistant/issues",
-  "version": "0.0.1",
-  "requirements": [],
-  "config_flow": true,
-  "integration_type": "integration"
+  "name": "StackSpot AI"
 }

@@ -1,0 +1,28 @@
+name: "[DEV] PR Sync Develop → Main"
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Reset promotion branch
+        run: |
+          git fetch origin develop:develop
+          git reset --hard develop
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: develop
+          title: 'Merge develop into main'
+          body: 'Pull request automatic to update branch `main` with `develop` changes.'
