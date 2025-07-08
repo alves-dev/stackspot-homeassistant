@@ -25,4 +25,4 @@ jobs:
         with:
           branch: develop
           title: 'Merge develop into main'
-          body: 'Pull request automatic to update branch `main` with `development` changes.'
+          body: 'Pull request automatic to update branch `main` with `develop` changes.'
