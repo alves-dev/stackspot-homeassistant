@@ -23,8 +23,8 @@ interface do Home Assistant.
 ![interaction.png](.docs/interaction.png)
 
 ### Instalação
-A integração está em processo para ser adicionada diretamente no HACS, mas você pode adicionar ela adicionando o repositório
-diretamente ao HACS, basta clicar no botão a seguir:
+A integração está em processo para ser adicionada por padrão no HACS, mas você pode adicionar ela adicionando o repositório
+diretamente ao seu HACS, basta clicar no botão a seguir:
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=alves-dev&repository=stackspot-homeassistant&category=integration)
 
