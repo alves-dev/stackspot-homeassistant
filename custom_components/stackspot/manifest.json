@@ -1,4 +1,6 @@
 {
+  "domain": "stackspot",
+  "name": "StackSpot AI",
   "after_dependencies": [
     "conversation"
   ],
@@ -10,10 +12,8 @@
     "conversation"
   ],
   "documentation": "https://github.com/alves-dev/stackspot-homeassistant",
-  "domain": "stackspot",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/alves-dev/stackspot-homeassistant/issues",
-  "name": "StackSpot AI",
   "requirements": [],
   "version": "0.0.1"
 }
