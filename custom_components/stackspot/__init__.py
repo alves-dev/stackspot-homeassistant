@@ -8,10 +8,12 @@ from .const import (
     CONF_REALM,
     CONF_CLIENT_ID,
     CONF_CLIENT_KEY,
-    CONF_AGENT,
+    CONF_AGENT_ID,
     DOMAIN,
     SENSOR_TOKENS_KEY,
-    AGENTS_KEY
+    AGENTS_KEY,
+    CONF_AGENT_NAME,
+    CONF_AGENT_NAME_DEFAULT
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -27,10 +29,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     entry_id = entry.entry_id
 
     config_data = {
+        CONF_AGENT_NAME: entry.data.get(CONF_AGENT_NAME),
+        CONF_AGENT_ID: entry.data.get(CONF_AGENT_ID),
         CONF_REALM: entry.data.get(CONF_REALM),
         CONF_CLIENT_ID: entry.data.get(CONF_CLIENT_ID),
         CONF_CLIENT_KEY: entry.data.get(CONF_CLIENT_KEY),
-        CONF_AGENT: entry.data.get(CONF_AGENT),
         'entry_id': entry_id
     }
 
@@ -53,3 +56,11 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             del hass.data[DOMAIN]
 
     return unload_ok
+
+
+async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry):
+    """Handle migration of a config entry."""
+    if entry.version == 1:
+        new_data = {**entry.data, CONF_AGENT_NAME: CONF_AGENT_NAME_DEFAULT}
+        return hass.config_entries.async_update_entry(entry, data=new_data)
+    return entry

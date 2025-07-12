@@ -15,13 +15,14 @@ from .const import (
     CONF_REALM,
     CONF_CLIENT_ID,
     CONF_CLIENT_KEY,
-    CONF_AGENT,
+    CONF_AGENT_ID,
     DOMAIN,
     SENSOR_TOKENS_KEY,
     SENSOR_USER_TOKEN,
     SENSOR_OUTPUT_TOKEN,
     SENSOR_ENRICHMENT_TOKEN,
-    SENSOR_TOTAL_TOKEN
+    SENSOR_TOTAL_TOKEN,
+    CONF_AGENT_NAME
 )
 from .sensor import TokenUserSensor
 
@@ -32,10 +33,11 @@ class StackSpotAgent(AbstractConversationAgent):
     def __init__(self, hass: HomeAssistant, config: dict) -> None:
         """Inicializa o agente com as configurações."""
         self.hass = hass
+        self._agent_name = config.get(CONF_AGENT_NAME)
+        self._agent_id = config.get(CONF_AGENT_ID)
         self._realm = config.get(CONF_REALM)
         self._client_id = config.get(CONF_CLIENT_ID)
         self._client_key = config.get(CONF_CLIENT_KEY)
-        self._agent_id = config.get(CONF_AGENT)
         self._access_token = None  # Para armazenar o token de acesso da Stackspot
         self._session = aiohttp.ClientSession()
         self._entry_id = config.get('entry_id')
@@ -48,7 +50,7 @@ class StackSpotAgent(AbstractConversationAgent):
         """Fecha a sessão aiohttp."""
         if self._session and not self._session.closed:
             await self._session.close()
-            _LOGGER.debug(f"aiohttp session closed for agent {self._agent_id}.")
+            _LOGGER.debug(f"aiohttp session closed for agent {self._agent_name}.")
 
     async def async_process(self, user_input: ConversationInput) -> ConversationResult:
         """Processa a entrada do usuário e retorna a resposta."""
@@ -112,7 +114,7 @@ class StackSpotAgent(AbstractConversationAgent):
                 if response.status == 401 and retaining == False:
                     _LOGGER.info('Token expirado, removendo o atual.')
                     self._access_token = None
-                    await self._send_prompt_to_stackspot(prompt, retaining=True)
+                    await self.send_prompt_to_stackspot(prompt, retaining=True)
 
                 response.raise_for_status()
                 response_data = await response.json()

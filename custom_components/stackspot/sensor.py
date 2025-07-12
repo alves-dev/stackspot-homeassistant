@@ -4,7 +4,6 @@ from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import STATE_UNKNOWN
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.restore_state import RestoreEntity
 
 from .const import (
@@ -13,19 +12,22 @@ from .const import (
     SENSOR_USER_TOKEN,
     SENSOR_ENRICHMENT_TOKEN,
     SENSOR_OUTPUT_TOKEN,
-    SENSOR_TOTAL_TOKEN
+    SENSOR_TOTAL_TOKEN,
+    CONF_AGENT_NAME
 )
+from .util import get_device_info
 
 _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities):
     entry_id = entry.entry_id
+    agent_name = entry.data.get(CONF_AGENT_NAME)
 
-    total_sensor = TokenTotalSensor(entry_id)
-    user_sensor = TokenUserSensor(entry_id)
-    enrichment_sensor = TokenEnrichmentSensor(entry_id)
-    output_sensor = TokenOutputSensor(entry_id)
+    total_sensor = TokenTotalSensor(entry_id, agent_name)
+    user_sensor = TokenUserSensor(entry_id, agent_name)
+    enrichment_sensor = TokenEnrichmentSensor(entry_id, agent_name)
+    output_sensor = TokenOutputSensor(entry_id, agent_name)
 
     sensors = [
         total_sensor,
@@ -50,13 +52,10 @@ class TokenSensor(SensorEntity, RestoreEntity):
     _attr_has_entity_name = True
     _attr_native_unit_of_measurement = "tokens"
 
-    def __init__(self, entry_id: str):
+    def __init__(self, entry_id: str, agent_name: str):
+        self._agent_name = agent_name
         self._attr_native_value = 0
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry_id)},
-            name="StackSpot Tokens",
-            manufacturer="StackSpot AI",
-        )
+        self._attr_device_info = get_device_info(entry_id, agent_name)
 
     @property
     def icon(self):
@@ -70,12 +69,12 @@ class TokenSensor(SensorEntity, RestoreEntity):
         if last_state is not None and last_state.state != STATE_UNKNOWN:
             try:
                 self._attr_native_value = int(last_state.state)
-                _LOGGER.debug(f"Restored {self.entity_id} to {self._attr_native_value} from last state.")
+                _LOGGER.debug(f"Restored {self._agent_name} to {self._attr_native_value} from last state.")
             except ValueError:
                 _LOGGER.warning(
-                    f"Could not convert persisted state '{last_state.state}' for {self.entity_id} to a number. Starting from 0.")
+                    f"Could not convert persisted state '{last_state.state}' for {self._agent_name} to a number. Starting from 0.")
         else:
-            _LOGGER.debug(f"{self.entity_id} has no previous state or is unknown. Starting from 0.")
+            _LOGGER.debug(f"{self._agent_name} has no previous state or is unknown. Starting from 0.")
 
     def update_native_value_adding(self, value: int) -> None:
         if isinstance(value, int) or isinstance(value, float):
@@ -88,30 +87,30 @@ class TokenSensor(SensorEntity, RestoreEntity):
 class TokenTotalSensor(TokenSensor):
     _attr_name = "Total Tokens Count"
 
-    def __init__(self, entry_id: str):
-        super().__init__(entry_id)
+    def __init__(self, entry_id: str, agent_name: str):
+        super().__init__(entry_id, agent_name)
         self._attr_unique_id = f"stackspot_token_total_count_{entry_id}"
 
 
 class TokenUserSensor(TokenSensor):
     _attr_name = "User Tokens Count"
 
-    def __init__(self, entry_id: str):
-        super().__init__(entry_id)
+    def __init__(self, entry_id: str, agent_name: str):
+        super().__init__(entry_id, agent_name)
         self._attr_unique_id = f"stackspot_token_user_count_{entry_id}"
 
 
 class TokenEnrichmentSensor(TokenSensor):
     _attr_name = "Enrichment Tokens Count"
 
-    def __init__(self, entry_id: str):
-        super().__init__(entry_id)
+    def __init__(self, entry_id: str, agent_name: str):
+        super().__init__(entry_id, agent_name)
         self._attr_unique_id = f"stackspot_token_enrichment_count_{entry_id}"
 
 
 class TokenOutputSensor(TokenSensor):
     _attr_name = "Output Tokens Count"
 
-    def __init__(self, entry_id: str):
-        super().__init__(entry_id)
+    def __init__(self, entry_id: str, agent_name: str):
+        super().__init__(entry_id, agent_name)
         self._attr_unique_id = f"stackspot_token_output_count_{entry_id}"
