@@ -15,8 +15,15 @@ from .const import (
     CONF_REALM,
     CONF_CLIENT_ID,
     CONF_CLIENT_KEY,
-    CONF_AGENT
+    CONF_AGENT,
+    DOMAIN,
+    SENSOR_TOKENS_KEY,
+    SENSOR_USER_TOKEN,
+    SENSOR_OUTPUT_TOKEN,
+    SENSOR_ENRICHMENT_TOKEN,
+    SENSOR_TOTAL_TOKEN
 )
+from .sensor import TokenUserSensor
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -30,12 +37,18 @@ class StackSpotAgent(AbstractConversationAgent):
         self._client_key = config.get(CONF_CLIENT_KEY)
         self._agent_id = config.get(CONF_AGENT)
         self._access_token = None  # Para armazenar o token de acesso da Stackspot
-        self._session = aiohttp.ClientSession()  # Sessão HTTP para reutilizar conexões
+        self._session = aiohttp.ClientSession()
+        self._entry_id = config.get('entry_id')
 
     @property
     def supported_languages(self) -> list[str]:
-        """Retorna os idiomas suportados por este agente."""
-        return ["pt"]
+        return ["*"]
+
+    async def async_close_session(self) -> None:
+        """Fecha a sessão aiohttp."""
+        if self._session and not self._session.closed:
+            await self._session.close()
+            _LOGGER.debug(f"aiohttp session closed for agent {self._agent_id}.")
 
     async def async_process(self, user_input: ConversationInput) -> ConversationResult:
         """Processa a entrada do usuário e retorna a resposta."""
@@ -44,7 +57,7 @@ class StackSpotAgent(AbstractConversationAgent):
         comando = user_input.text.lower()
         _LOGGER.debug(f"Agente recebeu o comando: '{comando}'")
 
-        resposta = await self._send_prompt_to_stackspot(user_input.text)
+        resposta = await self.send_prompt_to_stackspot(user_input.text)
 
         # Empacota a resposta para o Home Assistant
         intent_response = intent.IntentResponse(language=user_input.language)
@@ -76,7 +89,7 @@ class StackSpotAgent(AbstractConversationAgent):
             _LOGGER.error(f"Erro ao obter token da Stackspot AI: {e}")
             return None
 
-    async def _send_prompt_to_stackspot(self, prompt: str, retaining=False) -> str:
+    async def send_prompt_to_stackspot(self, prompt: str, retaining=False) -> str:
         """Envia o prompt para a Stackspot AI e retorna a resposta."""
         access_token = await self._get_access_token()
         if not access_token:
@@ -99,10 +112,45 @@ class StackSpotAgent(AbstractConversationAgent):
                 if response.status == 401 and retaining == False:
                     _LOGGER.info('Token expirado, removendo o atual.')
                     self._access_token = None
-                    await self._send_prompt_to_stackspot(self, prompt, retaining=True)
+                    await self._send_prompt_to_stackspot(prompt, retaining=True)
+
                 response.raise_for_status()
                 response_data = await response.json()
+                await self._actions_with_response(response_data)
                 return response_data.get("message", "Nenhuma resposta da Stackspot AI.")
         except aiohttp.ClientError as e:
             _LOGGER.error(f"Erro ao enviar prompt para Stackspot AI: {e}")
             return "Desculpe, tive um problema ao me comunicar com a Stackspot AI."
+
+    async def _actions_with_response(self, response: dict) -> None:
+        if "tokens" in response and isinstance(response["tokens"], dict):
+            user_tokens = response["tokens"].get("user", 0)
+            enrichment_tokens = response["tokens"].get("enrichment", 0)
+            output_tokens = response["tokens"].get("output", 0)
+
+            await self._update_token_sensors(user_tokens, enrichment_tokens, output_tokens)
+        else:
+            _LOGGER.debug("Resposta da StackSpot AI sem dados de tokens.")
+
+    async def _update_token_sensors(self, user: int, enrichment: int, output: int):
+        """Atualiza os sensores de tokens com os valores recebidos, somando-os."""
+        if (DOMAIN not in self.hass.data
+                or self._entry_id not in self.hass.data[DOMAIN]
+                or SENSOR_TOKENS_KEY not in self.hass.data[DOMAIN][self._entry_id]):
+            _LOGGER.warning("Token sensors not initialized in hass.data. Cannot update.")
+            return
+
+        total_sensor: TokenUserSensor = self.hass.data[DOMAIN][self._entry_id][SENSOR_TOKENS_KEY].get(
+            SENSOR_TOTAL_TOKEN)
+        total_sensor.update_native_value_adding(user + enrichment + output)
+
+        user_sensor: TokenUserSensor = self.hass.data[DOMAIN][self._entry_id][SENSOR_TOKENS_KEY].get(SENSOR_USER_TOKEN)
+        user_sensor.update_native_value_adding(user)
+
+        enrichment_sensor: TokenUserSensor = self.hass.data[DOMAIN][self._entry_id][SENSOR_TOKENS_KEY].get(
+            SENSOR_ENRICHMENT_TOKEN)
+        enrichment_sensor.update_native_value_adding(enrichment)
+
+        output_sensor: TokenUserSensor = self.hass.data[DOMAIN][self._entry_id][SENSOR_TOKENS_KEY].get(
+            SENSOR_OUTPUT_TOKEN)
+        output_sensor.update_native_value_adding(output)
