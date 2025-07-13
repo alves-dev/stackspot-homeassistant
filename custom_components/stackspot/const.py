@@ -18,5 +18,7 @@ SENSOR_USER_TOKEN = 'user_tokens'
 SENSOR_ENRICHMENT_TOKEN = 'enrichment_tokens'
 SENSOR_OUTPUT_TOKEN = 'output_tokens'
 
+SENSOR_TOTAL_GENERAL_TOKEN= 'general_total_tokens'
+
 # AGENTS
 AGENTS_KEY = 'agents'

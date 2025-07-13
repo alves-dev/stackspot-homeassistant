@@ -22,9 +22,9 @@ from .const import (
     SENSOR_OUTPUT_TOKEN,
     SENSOR_ENRICHMENT_TOKEN,
     SENSOR_TOTAL_TOKEN,
-    CONF_AGENT_NAME
+    CONF_AGENT_NAME, SENSOR_TOTAL_GENERAL_TOKEN
 )
-from .sensor import TokenUserSensor
+from .sensor import TokenSensor
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -44,7 +44,7 @@ class StackSpotAgent(AbstractConversationAgent):
 
     @property
     def supported_languages(self) -> list[str]:
-        return ["*"]
+        return ['pt-br']
 
     async def async_close_session(self) -> None:
         """Fecha a sessão aiohttp."""
@@ -136,23 +136,31 @@ class StackSpotAgent(AbstractConversationAgent):
 
     async def _update_token_sensors(self, user: int, enrichment: int, output: int):
         """Atualiza os sensores de tokens com os valores recebidos, somando-os."""
-        if (DOMAIN not in self.hass.data
-                or self._entry_id not in self.hass.data[DOMAIN]
+        total_tokens: int = user + enrichment + output
+
+        if DOMAIN not in self.hass.data:
+            _LOGGER.warning("DOMAIN key not initialized in hass.data. Cannot update.")
+            return
+
+        total_general: TokenSensor = self.hass.data[DOMAIN].get(SENSOR_TOTAL_GENERAL_TOKEN, 0)
+        total_general.update_native_value_adding(total_tokens)
+
+        if (self._entry_id not in self.hass.data[DOMAIN]
                 or SENSOR_TOKENS_KEY not in self.hass.data[DOMAIN][self._entry_id]):
             _LOGGER.warning("Token sensors not initialized in hass.data. Cannot update.")
             return
 
-        total_sensor: TokenUserSensor = self.hass.data[DOMAIN][self._entry_id][SENSOR_TOKENS_KEY].get(
+        total_sensor: TokenSensor = self.hass.data[DOMAIN][self._entry_id][SENSOR_TOKENS_KEY].get(
             SENSOR_TOTAL_TOKEN)
-        total_sensor.update_native_value_adding(user + enrichment + output)
+        total_sensor.update_native_value_adding(total_tokens)
 
-        user_sensor: TokenUserSensor = self.hass.data[DOMAIN][self._entry_id][SENSOR_TOKENS_KEY].get(SENSOR_USER_TOKEN)
+        user_sensor: TokenSensor = self.hass.data[DOMAIN][self._entry_id][SENSOR_TOKENS_KEY].get(SENSOR_USER_TOKEN)
         user_sensor.update_native_value_adding(user)
 
-        enrichment_sensor: TokenUserSensor = self.hass.data[DOMAIN][self._entry_id][SENSOR_TOKENS_KEY].get(
+        enrichment_sensor: TokenSensor = self.hass.data[DOMAIN][self._entry_id][SENSOR_TOKENS_KEY].get(
             SENSOR_ENRICHMENT_TOKEN)
         enrichment_sensor.update_native_value_adding(enrichment)
 
-        output_sensor: TokenUserSensor = self.hass.data[DOMAIN][self._entry_id][SENSOR_TOKENS_KEY].get(
+        output_sensor: TokenSensor = self.hass.data[DOMAIN][self._entry_id][SENSOR_TOKENS_KEY].get(
             SENSOR_OUTPUT_TOKEN)
         output_sensor.update_native_value_adding(output)

@@ -13,7 +13,8 @@ from .const import (
     SENSOR_ENRICHMENT_TOKEN,
     SENSOR_OUTPUT_TOKEN,
     SENSOR_TOTAL_TOKEN,
-    CONF_AGENT_NAME
+    CONF_AGENT_NAME,
+    SENSOR_TOTAL_GENERAL_TOKEN
 )
 from .util import get_device_info
 
@@ -43,6 +44,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
     hass.data[DOMAIN][entry_id][SENSOR_TOKENS_KEY][SENSOR_USER_TOKEN] = user_sensor
     hass.data[DOMAIN][entry_id][SENSOR_TOKENS_KEY][SENSOR_ENRICHMENT_TOKEN] = enrichment_sensor
     hass.data[DOMAIN][entry_id][SENSOR_TOKENS_KEY][SENSOR_OUTPUT_TOKEN] = output_sensor
+
+    if SENSOR_TOTAL_GENERAL_TOKEN not in hass.data[DOMAIN]:
+        total_geral_sensor = TokenTotalSensor(SENSOR_TOTAL_GENERAL_TOKEN, 'All agents')
+        hass.data[DOMAIN][SENSOR_TOTAL_GENERAL_TOKEN] = total_geral_sensor
+        sensors.append(total_geral_sensor)
 
     async_add_entities(sensors, update_before_add=True)
     _LOGGER.debug("Sensors tokens added in hass.data")
