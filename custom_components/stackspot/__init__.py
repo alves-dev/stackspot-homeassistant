@@ -13,7 +13,9 @@ from .const import (
     SENSOR_TOKENS_KEY,
     AGENTS_KEY,
     CONF_AGENT_NAME,
-    CONF_AGENT_NAME_DEFAULT
+    CONF_AGENT_NAME_DEFAULT,
+    CONF_MAX_MESSAGES_HISTORY,
+    CONF_HA_ENTITIES_ACCESS
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -28,16 +30,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     entry_id = entry.entry_id
 
-    config_data = {
-        CONF_AGENT_NAME: entry.data.get(CONF_AGENT_NAME),
-        CONF_AGENT_ID: entry.data.get(CONF_AGENT_ID),
-        CONF_REALM: entry.data.get(CONF_REALM),
-        CONF_CLIENT_ID: entry.data.get(CONF_CLIENT_ID),
-        CONF_CLIENT_KEY: entry.data.get(CONF_CLIENT_KEY),
-        'entry_id': entry_id
-    }
-
-    stackspot_agent_instance = StackSpotAgent(hass, config_data)
+    stackspot_agent_instance = StackSpotAgent(hass, entry)
     hass.data[DOMAIN][AGENTS_KEY][entry_id] = stackspot_agent_instance
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)

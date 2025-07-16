@@ -3,7 +3,6 @@ import logging
 from homeassistant.components.conversation import ConversationEntity, ConversationInput, ConversationResult
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.intent import IntentResponse
 
 from .agent import StackSpotAgent
 from .const import DOMAIN, CONF_AGENT_NAME, AGENTS_KEY
@@ -32,7 +31,7 @@ class StackSpotConversationEntity(ConversationEntity):
     """Representa uma entidade de conversação para StackSpot AI."""
 
     _attr_has_entity_name = True
-    _attr_name = None  # O nome será o entity_id gerado automaticamente ou definido via config_entry
+    _attr_name = None
 
     def __init__(self, hass: HomeAssistant, config_entry_id: str, agent_name: str,
                  agent_instance: StackSpotAgent) -> None:
@@ -50,15 +49,9 @@ class StackSpotConversationEntity(ConversationEntity):
 
     async def async_process(self, user_input: ConversationInput) -> ConversationResult:
         """Processa a entrada do usuário e retorna a resposta."""
-        _LOGGER.debug(f"Conversation entity received input for agent {self._agent_name}: '{user_input.text}'")
+        _LOGGER.debug(f"CONVERSATION: agent '{self._agent_name}' -> '{user_input.text}'")
 
-        # Delega o processamento ao seu StackSpotAgent
-        response_text = await self._agent_instance.send_prompt_to_stackspot(user_input.text)
-
-        # Empacota a resposta para o Home Assistant
-        intent_response = IntentResponse(language=user_input.language)
-        intent_response.async_set_speech(response_text)
-        return ConversationResult(response=intent_response, conversation_id=user_input.conversation_id)
+        return await self._agent_instance.async_process(user_input)
 
     async def async_will_remove_from_hass(self) -> None:
         """Chamado quando a entidade está prestes a ser removida."""

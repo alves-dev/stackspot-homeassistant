@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from datetime import datetime, UTC
 
 import aiohttp
 from homeassistant.components.conversation import (
@@ -8,6 +9,7 @@ from homeassistant.components.conversation import (
     ConversationResult,
     ConversationInput
 )
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import intent
 
@@ -22,25 +24,31 @@ from .const import (
     SENSOR_OUTPUT_TOKEN,
     SENSOR_ENRICHMENT_TOKEN,
     SENSOR_TOTAL_TOKEN,
-    CONF_AGENT_NAME, SENSOR_TOTAL_GENERAL_TOKEN
+    CONF_AGENT_NAME,
+    SENSOR_TOTAL_GENERAL_TOKEN,
+    CONF_MAX_MESSAGES_HISTORY,
+    SECONDS_KEEP_CONVERSATION_HISTORY
 )
+from .data_utils import ContextValue
 from .sensor import TokenSensor
 
 _LOGGER = logging.getLogger(__name__)
 
 
 class StackSpotAgent(AbstractConversationAgent):
-    def __init__(self, hass: HomeAssistant, config: dict) -> None:
+    def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         """Inicializa o agente com as configurações."""
-        self.hass = hass
-        self._agent_name = config.get(CONF_AGENT_NAME)
-        self._agent_id = config.get(CONF_AGENT_ID)
-        self._realm = config.get(CONF_REALM)
-        self._client_id = config.get(CONF_CLIENT_ID)
-        self._client_key = config.get(CONF_CLIENT_KEY)
-        self._access_token = None  # Para armazenar o token de acesso da Stackspot
+        self.hass: HomeAssistant = hass
+        self._entry = entry
+        self._agent_name: str = entry.data.get(CONF_AGENT_NAME)
+        self._agent_id: str = entry.data.get(CONF_AGENT_ID)
+        self._realm: str = entry.data.get(CONF_REALM)
+        self._client_id: str = entry.data.get(CONF_CLIENT_ID)
+        self._client_key: str = entry.data.get(CONF_CLIENT_KEY)
+        self._access_token: str = None  # Para armazenar o token de acesso da Stackspot
         self._session = aiohttp.ClientSession()
-        self._entry_id = config.get('entry_id')
+        self._entry_id: str = entry.entry_id
+        self._history: dict[str, ContextValue] = {}
 
     @property
     def supported_languages(self) -> list[str]:
@@ -55,15 +63,16 @@ class StackSpotAgent(AbstractConversationAgent):
     async def async_process(self, user_input: ConversationInput) -> ConversationResult:
         """Processa a entrada do usuário e retorna a resposta."""
 
-        # O texto bruto que o usuário falou/digitou
-        comando = user_input.text.lower()
-        _LOGGER.debug(f"Agente recebeu o comando: '{comando}'")
+        # History
+        await self._add_message(user_input.conversation_id, 'user', user_input.text)
+        payload = await self._get_history(user_input.conversation_id)
 
-        resposta = await self.send_prompt_to_stackspot(user_input.text)
+        text_response = await self._send_prompt_to_stackspot(str(payload))
+        await self._add_message(user_input.conversation_id, 'assistant', text_response)
 
         # Empacota a resposta para o Home Assistant
         intent_response = intent.IntentResponse(language=user_input.language)
-        intent_response.async_set_speech(resposta)
+        intent_response.async_set_speech(text_response)
         return ConversationResult(response=intent_response, conversation_id=user_input.conversation_id)
 
     async def _get_access_token(self) -> str | None:
@@ -91,7 +100,7 @@ class StackSpotAgent(AbstractConversationAgent):
             _LOGGER.error(f"Erro ao obter token da Stackspot AI: {e}")
             return None
 
-    async def send_prompt_to_stackspot(self, prompt: str, retaining=False) -> str:
+    async def _send_prompt_to_stackspot(self, prompt: str, retaining=False) -> str:
         """Envia o prompt para a Stackspot AI e retorna a resposta."""
         access_token = await self._get_access_token()
         if not access_token:
@@ -114,7 +123,7 @@ class StackSpotAgent(AbstractConversationAgent):
                 if response.status == 401 and retaining == False:
                     _LOGGER.info('Token expirado, removendo o atual.')
                     self._access_token = None
-                    await self.send_prompt_to_stackspot(prompt, retaining=True)
+                    await self._send_prompt_to_stackspot(prompt, retaining=True)
 
                 response.raise_for_status()
                 response_data = await response.json()
@@ -164,3 +173,24 @@ class StackSpotAgent(AbstractConversationAgent):
         output_sensor: TokenSensor = self.hass.data[DOMAIN][self._entry_id][SENSOR_TOKENS_KEY].get(
             SENSOR_OUTPUT_TOKEN)
         output_sensor.update_native_value_adding(output)
+
+    async def _get_history(self, conversation_id: str) -> dict:
+        ctx: ContextValue = self._history[conversation_id]
+        messages = ctx.get_history()
+        return {'history': messages}
+
+    async def _add_message(self, conversation_id: str, role: str, content: str):
+        ctx: ContextValue = self._history.setdefault(conversation_id, ContextValue())
+        ctx.add_message(role, content)
+        ctx.trim(self._entry.options.get(CONF_MAX_MESSAGES_HISTORY))
+        _LOGGER.debug(
+            f'HISTORY - len: {len(ctx.messages)} | all conversations: {self._history.keys()}')
+
+        await self._cleanup()
+
+    async def _cleanup(self):
+        now = datetime.now(UTC)
+        for cid, ctx in list(self._history.items()):
+            if (now - ctx.last_interaction).total_seconds() > SECONDS_KEEP_CONVERSATION_HISTORY:
+                del self._history[cid]
+                _LOGGER.debug(f'Conversation {cid} deleted!')
