@@ -15,23 +15,12 @@
         "title": "{agent_name} options",
         "data": {
           "max_messages_history": "Maximum number of messages in the history",
-          "ha_entities_access": "Allow access to Home Assistant entities",
-          "token_reset_interval": "Reset interval of tokens counters"
+          "ha_entities_access": "Allow access to Home Assistant entities"
         },
         "data_description": {
           "max_messages_history": "Defines how many recent messages will be kept in the history for each section",
-          "ha_entities_access": "If activated, the agent can access information and control entities configured in the Home Assistant",
-          "token_reset_interval": "Defines when used tokens count will be reset"
+          "ha_entities_access": "If activated, the agent can access information and control entities configured in the Home Assistant"
         }
-      }
-    }
-  },
-  "selector": {
-    "token_reset_interval": {
-      "options": {
-        "day": "Daily",
-        "month": "Monthly",
-        "never": "Never"
       }
     }
   }

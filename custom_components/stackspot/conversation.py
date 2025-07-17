@@ -20,7 +20,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
 
     if stackspot_agent_instance:
         async_add_entities([
-            StackSpotConversationEntity(hass, entry_id, agent_name, stackspot_agent_instance)
+            StackSpotConversationEntity(entry_id, agent_name, stackspot_agent_instance)
         ], True)
         _LOGGER.debug(f"StackSpot Conversation Entity added for entry {entry_id}.")
     else:
@@ -33,11 +33,8 @@ class StackSpotConversationEntity(ConversationEntity):
     _attr_has_entity_name = True
     _attr_name = None
 
-    def __init__(self, hass: HomeAssistant, config_entry_id: str, agent_name: str,
-                 agent_instance: StackSpotAgent) -> None:
+    def __init__(self, config_entry_id: str, agent_name: str, agent_instance: StackSpotAgent) -> None:
         """Inicializa a entidade de conversação."""
-        self._hass = hass
-        self._config_entry_id = config_entry_id
         self._agent_name = agent_name
         self._agent_instance = agent_instance
         self._attr_unique_id = f"stackspot_conversation_{config_entry_id}"

@@ -15,23 +15,12 @@
         "title": "Opções do {agent_name}",
         "data": {
           "max_messages_history": "Número máximo de Mensagens no Histórico",
-          "ha_entities_access": "Permitir o acesso as entidades do Home Assistant",
-          "token_reset_interval": "Intervalo de Reset dos contadores de tokens"
+          "ha_entities_access": "Permitir o acesso as entidades do Home Assistant"
         },
         "data_description": {
           "max_messages_history": "Define quantas mensagens recentes serão mantidas no histórico para cada seção",
-          "ha_entities_access": "Se ativado, o agente poderá acessar informações e controlar entidades configuradas no Home Assistant",
-          "token_reset_interval": "Define quando a contagem de tokens usados será resetada"
+          "ha_entities_access": "Se ativado, o agente poderá acessar informações e controlar entidades configuradas no Home Assistant"
         }
-      }
-    }
-  },
-  "selector": {
-    "token_reset_interval": {
-      "options": {
-        "day": "Diariamente",
-        "month": "Mensalmente",
-        "never": "Nunca"
       }
     }
   }

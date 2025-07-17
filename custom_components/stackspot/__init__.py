@@ -5,27 +5,23 @@ from homeassistant.core import HomeAssistant
 
 from .agent import StackSpotAgent
 from .const import (
-    CONF_REALM,
-    CONF_CLIENT_ID,
-    CONF_CLIENT_KEY,
-    CONF_AGENT_ID,
     DOMAIN,
-    SENSOR_TOKENS_KEY,
     AGENTS_KEY,
     CONF_AGENT_NAME,
-    CONF_AGENT_NAME_DEFAULT,
-    CONF_MAX_MESSAGES_HISTORY,
-    CONF_HA_ENTITIES_ACCESS
+    CONF_AGENT_NAME_DEFAULT
 )
+from .sensor import TokenTotalSensor
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS = ['conversation', 'sensor']
+PLATFORMS = ['conversation', 'sensor', 'select']
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if DOMAIN not in hass.data:
         hass.data[DOMAIN] = {}
+
+    if AGENTS_KEY not in hass.data[DOMAIN]:
         hass.data[DOMAIN][AGENTS_KEY] = {}
 
     entry_id = entry.entry_id
