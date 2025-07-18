@@ -1,4 +1,5 @@
 import logging
+from typing import Literal
 
 from homeassistant.components.conversation import ConversationEntity, ConversationInput, ConversationResult
 from homeassistant.config_entries import ConfigEntry
@@ -41,7 +42,7 @@ class StackSpotConversationEntity(ConversationEntity):
         self._attr_device_info = get_device_info(config_entry_id, agent_name)
 
     @property
-    def supported_languages(self) -> list[str]:
+    def supported_languages(self) -> list[str] | Literal["*"]:
         return self._agent_instance.supported_languages
 
     async def async_process(self, user_input: ConversationInput) -> ConversationResult:

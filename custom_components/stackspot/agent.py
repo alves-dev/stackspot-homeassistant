@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, UTC
+from typing import Literal
 
 import aiohttp
 from homeassistant.components.conversation import (
@@ -51,8 +52,8 @@ class StackSpotAgent(AbstractConversationAgent):
         self._history: dict[str, ContextValue] = {}
 
     @property
-    def supported_languages(self) -> list[str]:
-        return ['pt-br']
+    def supported_languages(self) -> list[str] | Literal["*"]:
+        return '*'
 
     async def async_close_session(self) -> None:
         """Fecha a sessão aiohttp."""
