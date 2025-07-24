@@ -1,28 +1,32 @@
+import logging
+from typing import Any
+
 import voluptuous as vol
-from homeassistant.config_entries import HANDLERS, ConfigFlow, OptionsFlow, ConfigEntry
+from homeassistant.config_entries import HANDLERS, ConfigFlow, ConfigEntry, ConfigSubentryFlow, \
+    SubentryFlowResult, OptionsFlow
 from homeassistant.core import callback
 from homeassistant.helpers.selector import (
     NumberSelector,
     NumberSelectorConfig,
-    NumberSelectorMode,
-    BooleanSelector
+    NumberSelectorMode
 )
 
 from .const import (
     DOMAIN,
+    CONF_ACCOUNT,
+    CONF_ACCOUNT_DEFAULT,
     CONF_REALM,
+    CONF_REALM_DEFAULT,
     CONF_CLIENT_ID,
     CONF_CLIENT_KEY,
-    CONF_AGENT_ID,
-    CONF_REALM_DEFAULT,
     CONF_AGENT_NAME,
     CONF_AGENT_NAME_DEFAULT,
-    CONF_HA_ENTITIES_ACCESS,
-    CONF_TOKEN_RESET_INTERVAL,
-    TOKEN_RESET_INTERVAL_MONTH,
-    TOKEN_RESET_INTERVAL_NEVER,
-    CONF_MAX_MESSAGES_HISTORY
+    CONF_AGENT_ID,
+    CONF_MAX_MESSAGES_HISTORY,
+    SUBENTRY_AGENT
 )
+
+_LOGGER = logging.getLogger(__name__)
 
 
 @HANDLERS.register(DOMAIN)
@@ -30,30 +34,33 @@ class StackspotConfigFlow(ConfigFlow, domain=DOMAIN):
     """Config flow for Stackspot integration."""
     VERSION = 2
 
+    @classmethod
+    @callback
+    def async_get_supported_subentry_types(
+            cls, config_entry: ConfigEntry
+    ) -> dict[str, type[ConfigSubentryFlow]]:
+        """Return subentries supported by this integration."""
+        return {
+            SUBENTRY_AGENT: AgentSubentryFlow
+        }
+
     async def async_step_user(self, user_input=None):
         """Handle the initial setup step for the user."""
         errors = {}
 
         if user_input is not None:
             return self.async_create_entry(
-                title=user_input[CONF_AGENT_NAME],
+                title=user_input[CONF_ACCOUNT],
                 data={
-                    CONF_AGENT_NAME: user_input[CONF_AGENT_NAME],
-                    CONF_AGENT_ID: user_input[CONF_AGENT_ID],
+                    CONF_ACCOUNT: user_input[CONF_ACCOUNT],
                     CONF_REALM: user_input[CONF_REALM],
                     CONF_CLIENT_ID: user_input[CONF_CLIENT_ID],
                     CONF_CLIENT_KEY: user_input[CONF_CLIENT_KEY],
-                },
-                options={
-                    CONF_MAX_MESSAGES_HISTORY: 10,
-                    CONF_HA_ENTITIES_ACCESS: False,
-                    CONF_TOKEN_RESET_INTERVAL: TOKEN_RESET_INTERVAL_MONTH,
                 }
             )
 
         data_schema = vol.Schema({
-            vol.Required(CONF_AGENT_NAME, default=CONF_AGENT_NAME_DEFAULT): str,
-            vol.Required(CONF_AGENT_ID): str,
+            vol.Required(CONF_ACCOUNT, default=CONF_ACCOUNT_DEFAULT): str,
             vol.Required(CONF_REALM, default=CONF_REALM_DEFAULT): str,
             vol.Required(CONF_CLIENT_ID): str,
             vol.Required(CONF_CLIENT_KEY): str,
@@ -75,45 +82,119 @@ class StackspotConfigFlow(ConfigFlow, domain=DOMAIN):
 class StackspotOptionsFlowHandler(OptionsFlow):
     """Handles options flow for the Stackspot integration."""
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # Adicione config_entry ao __init__
         """Initialize options flow."""
 
     async def async_step_init(self, user_input=None):
         """Manage the options."""
         if user_input is not None:
-            return self.async_create_entry(title="", data=user_input)
+            self.hass.config_entries.async_update_entry(
+                self.config_entry,
+                title=user_input[CONF_ACCOUNT],
+                data={
+                    CONF_ACCOUNT: user_input[CONF_ACCOUNT],
+                    CONF_REALM: user_input[CONF_REALM],
+                    CONF_CLIENT_ID: user_input[CONF_CLIENT_ID],
+                    CONF_CLIENT_KEY: user_input[CONF_CLIENT_KEY],
+                },
+            )
 
-        max_message = vol.Required(CONF_MAX_MESSAGES_HISTORY,
-                                   default=self.config_entry.options.get(CONF_MAX_MESSAGES_HISTORY, 10))
+            self.hass.async_create_task(
+                self.hass.config_entries.async_reload(self.config_entry.entry_id)
+            )
 
-        ha_entities = vol.Required(CONF_HA_ENTITIES_ACCESS,
-                                   default=self.config_entry.options.get(CONF_HA_ENTITIES_ACCESS, True))
+            return self.async_create_entry(title="", data={})
 
-        tokens_reset = vol.Required(CONF_TOKEN_RESET_INTERVAL,
-                                    default=self.config_entry.options.get(CONF_TOKEN_RESET_INTERVAL,
-                                                                          TOKEN_RESET_INTERVAL_NEVER))
+        current_data = self.config_entry.data
 
-        options_schema = vol.Schema({
-            max_message: NumberSelector(
-                NumberSelectorConfig(min=2, max=100, step=2, mode=NumberSelectorMode.SLIDER)
-            ),
-            ha_entities: BooleanSelector(),
-            # tokens_reset: SelectSelector(
-            #     SelectSelectorConfig(
-            #         options=[
-            #             TOKEN_RESET_INTERVAL_DAY,
-            #             TOKEN_RESET_INTERVAL_MONTH,
-            #             TOKEN_RESET_INTERVAL_NEVER
-            #         ],
-            #         multiple=False,
-            #         translation_key=CONF_TOKEN_RESET_INTERVAL
-            #     )
-            # ),
-        })
+        data_schema = self.add_suggested_values_to_schema(
+            vol.Schema({
+                vol.Required(CONF_ACCOUNT): str,
+                vol.Required(CONF_REALM): str,
+                vol.Required(CONF_CLIENT_ID): str,
+                vol.Required(CONF_CLIENT_KEY): str
+            }),
+            current_data
+        )
 
-        agent_name = self.config_entry.data.get(CONF_AGENT_NAME, CONF_AGENT_NAME_DEFAULT)
         return self.async_show_form(
             step_id="init",
-            data_schema=options_schema,
-            description_placeholders={"agent_name": agent_name},
+            data_schema=data_schema,
+            description_placeholders={
+                "account_name": current_data.get(CONF_ACCOUNT, CONF_ACCOUNT_DEFAULT)
+            }
+        )
+
+
+# async def async_configure_later(hass: HomeAssistant, entry_id: str) -> None:
+#     await asyncio.sleep(1)
+#     await hass.config_entries.async_reload(entry_id)
+
+
+class AgentSubentryFlow(ConfigSubentryFlow):
+    """Flow para adicionar agentes individuais."""
+
+    async def async_step_user(self, user_input=None):
+        if user_input is not None:
+            _LOGGER.debug("Subentry data: %s", user_input)
+            new_entry = self.async_create_entry(title=user_input[CONF_AGENT_ID], data=user_input)
+            # self.hass.async_create_task(async_configure_later(self.hass, self._entry_id))
+            self.hass.async_create_task(
+                self.hass.config_entries.async_reload(self._entry_id)
+            )
+            return new_entry
+
+        max_message = vol.Required(CONF_MAX_MESSAGES_HISTORY, default=10)
+
+        return self.async_show_form(
+            step_id="user",
+            data_schema=vol.Schema({
+                vol.Required(CONF_AGENT_NAME, default=CONF_AGENT_NAME_DEFAULT): str,
+                vol.Required(CONF_AGENT_ID): str,
+                max_message: NumberSelector(
+                    NumberSelectorConfig(min=2, max=100, step=2, mode=NumberSelectorMode.SLIDER)
+                )
+            })
+        )
+
+    async def async_step_reconfigure(
+            self, user_input: dict[str, Any] | None = None
+    ) -> SubentryFlowResult:
+        """Handle reconfigure step for an existing agent."""
+
+        if user_input is not None:
+            _LOGGER.debug("Subentry data (reconfigure): %s", user_input)
+
+            result = self.async_update_and_abort(
+                self._get_entry(),
+                self._get_reconfigure_subentry(),
+                data=user_input,
+                title=user_input[CONF_AGENT_ID]
+            )
+
+            self.hass.async_create_task(
+                self.hass.config_entries.async_reload(self._entry_id)
+            )
+
+            return result
+
+        current_data = self._get_reconfigure_subentry().data
+
+        data_schema = self.add_suggested_values_to_schema(
+            vol.Schema({
+                vol.Required(CONF_AGENT_NAME): str,
+                vol.Required(CONF_AGENT_ID): str,
+                vol.Required(CONF_MAX_MESSAGES_HISTORY): NumberSelector(
+                    NumberSelectorConfig(min=2, max=100, step=2, mode=NumberSelectorMode.SLIDER)
+                )
+            }),
+            current_data  # Passa os dados atuais para preencher o formulário
+        )
+
+        return self.async_show_form(
+            step_id="reconfigure",
+            data_schema=data_schema,
+            description_placeholders={
+                "agent_name": current_data.get(CONF_AGENT_NAME, "Agent")
+            }
         )
