@@ -1,9 +1,9 @@
 import logging
 
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 
-from .agent import StackSpotAgent
 from .const import (
     DOMAIN,
     AGENTS_KEY,
@@ -14,20 +14,17 @@ from .sensor import TokenTotalSensor
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS = ['conversation', 'sensor', 'select']
+PLATFORMS = [Platform.CONVERSATION, Platform.SENSOR, Platform.SELECT]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if DOMAIN not in hass.data:
         hass.data[DOMAIN] = {}
 
-    if AGENTS_KEY not in hass.data[DOMAIN]:
-        hass.data[DOMAIN][AGENTS_KEY] = {}
-
     entry_id = entry.entry_id
 
-    stackspot_agent_instance = StackSpotAgent(hass, entry)
-    hass.data[DOMAIN][AGENTS_KEY][entry_id] = stackspot_agent_instance
+    if entry_id not in hass.data[DOMAIN]:
+        hass.data[DOMAIN][entry_id] = {}
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
@@ -37,16 +34,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
-    if unload_ok:
-        if entry.entry_id in hass.data[DOMAIN][AGENTS_KEY]:
-            await hass.data[DOMAIN][AGENTS_KEY][entry.entry_id].async_close_session()
-            del hass.data[DOMAIN][AGENTS_KEY][entry.entry_id]
-        if not hass.data[DOMAIN][AGENTS_KEY]:
-            del hass.data[DOMAIN]
-
     return unload_ok
 
 
+# TODO: não faz sentido se não conseguir migrar do 1 para o 2
 async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Handle migration of a config entry."""
     if entry.version == 1:
