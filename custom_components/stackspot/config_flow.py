@@ -82,7 +82,7 @@ class StackspotConfigFlow(ConfigFlow, domain=DOMAIN):
 class StackspotOptionsFlowHandler(OptionsFlow):
     """Handles options flow for the Stackspot integration."""
 
-    def __init__(self) -> None:  # Adicione config_entry ao __init__
+    def __init__(self) -> None:
         """Initialize options flow."""
 
     async def async_step_init(self, user_input=None):
@@ -121,7 +121,7 @@ class StackspotOptionsFlowHandler(OptionsFlow):
             step_id="init",
             data_schema=data_schema,
             description_placeholders={
-                "account_name": current_data.get(CONF_ACCOUNT, CONF_ACCOUNT_DEFAULT)
+                "account_name": current_data.get(CONF_ACCOUNT, 'Account')
             }
         )
 
@@ -188,7 +188,7 @@ class AgentSubentryFlow(ConfigSubentryFlow):
                     NumberSelectorConfig(min=2, max=100, step=2, mode=NumberSelectorMode.SLIDER)
                 )
             }),
-            current_data  # Passa os dados atuais para preencher o formulário
+            current_data
         )
 
         return self.async_show_form(
