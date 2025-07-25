@@ -6,10 +6,12 @@ from homeassistant.core import HomeAssistant
 
 from .const import (
     DOMAIN,
+    MANAGER,
     AGENTS_KEY,
     CONF_AGENT_NAME,
     CONF_AGENT_NAME_DEFAULT
 )
+from .entities.stackspot_entity_manager import StackSpotEntityManager
 from .sensor import TokenTotalSensor
 
 _LOGGER = logging.getLogger(__name__)
@@ -21,10 +23,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if DOMAIN not in hass.data:
         hass.data[DOMAIN] = {}
 
-    entry_id = entry.entry_id
-
-    if entry_id not in hass.data[DOMAIN]:
-        hass.data[DOMAIN][entry_id] = {}
+    if MANAGER not in hass.data[DOMAIN]:
+        hass.data[DOMAIN][MANAGER] = StackSpotEntityManager()
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 

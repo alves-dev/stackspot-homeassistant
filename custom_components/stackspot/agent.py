@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, UTC
-from typing import Literal
+from typing import Literal, Optional
 
 import aiohttp
 from homeassistant.components.conversation import (
@@ -10,45 +10,35 @@ from homeassistant.components.conversation import (
     ConversationResult,
     ConversationInput
 )
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import intent
+from homeassistant.helpers.entity import Entity
 
+from . import StackSpotEntityManager
 from .const import (
-    CONF_REALM,
-    CONF_CLIENT_ID,
-    CONF_CLIENT_KEY,
-    CONF_AGENT_ID,
     DOMAIN,
-    SENSOR_TOKENS_KEY,
+    MANAGER,
     SENSOR_USER_TOKEN,
     SENSOR_OUTPUT_TOKEN,
     SENSOR_ENRICHMENT_TOKEN,
     SENSOR_TOTAL_TOKEN,
-    CONF_AGENT_NAME,
-    SENSOR_TOTAL_GENERAL_TOKEN,
-    CONF_MAX_MESSAGES_HISTORY,
-    SECONDS_KEEP_CONVERSATION_HISTORY
+    SECONDS_KEEP_CONVERSATION_HISTORY,
+    SENSOR_TOTAL_GENERAL_TOKEN
 )
-from .data_utils import ContextValue
-from .sensor import TokenSensor
+from .data_utils import ContextValue, StackSpotAgentConfig
+from .entities.token_sensor import TokenSensor
 
 _LOGGER = logging.getLogger(__name__)
 
 
 class StackSpotAgent(AbstractConversationAgent):
-    def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
+    def __init__(self, hass: HomeAssistant, config: StackSpotAgentConfig) -> None:
         """Inicializa o agente com as configurações."""
         self.hass: HomeAssistant = hass
-        self._entry = entry
-        self._agent_name: str = entry.data.get(CONF_AGENT_NAME)
-        self._agent_id: str = entry.data.get(CONF_AGENT_ID)
-        self._realm: str = entry.data.get(CONF_REALM)
-        self._client_id: str = entry.data.get(CONF_CLIENT_ID)
-        self._client_key: str = entry.data.get(CONF_CLIENT_KEY)
-        self._access_token: str = None  # Para armazenar o token de acesso da Stackspot
+        self.manager: StackSpotEntityManager = hass.data[DOMAIN][MANAGER]
+        self.config: StackSpotAgentConfig = config
+        self._access_token: str | None = None
         self._session = aiohttp.ClientSession()
-        self._entry_id: str = entry.entry_id
         self._history: dict[str, ContextValue] = {}
 
     @property
@@ -59,7 +49,7 @@ class StackSpotAgent(AbstractConversationAgent):
         """Fecha a sessão aiohttp."""
         if self._session and not self._session.closed:
             await self._session.close()
-            _LOGGER.debug(f"aiohttp session closed for agent {self._agent_name}.")
+            _LOGGER.debug(f"aiohttp session closed for agent {self.config.agent_name}.")
 
     async def async_process(self, user_input: ConversationInput) -> ConversationResult:
         """Processa a entrada do usuário e retorna a resposta."""
@@ -82,12 +72,12 @@ class StackSpotAgent(AbstractConversationAgent):
         if self._access_token:
             return self._access_token
 
-        token_url = f"https://idm.stackspot.com/{self._realm}/oidc/oauth/token"
+        token_url = f"https://idm.stackspot.com/{self.config.realm}/oidc/oauth/token"
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
         data = {
             "grant_type": "client_credentials",
-            "client_id": self._client_id,
-            "client_secret": self._client_key,
+            "client_id": self.config.client_id,
+            "client_secret": self.config.client_key,
         }
 
         try:
@@ -107,7 +97,7 @@ class StackSpotAgent(AbstractConversationAgent):
         if not access_token:
             return "Desculpe, não consegui me autenticar com a Stackspot AI."
 
-        chat_url = f"https://genai-inference-app.stackspot.com/v1/agent/{self._agent_id}/chat"
+        chat_url = f"https://genai-inference-app.stackspot.com/v1/agent/{self.config.agent_id}/chat"
         headers = {
             "Authorization": f"Bearer {access_token}",
             "Content-Type": "application/json",
@@ -147,33 +137,31 @@ class StackSpotAgent(AbstractConversationAgent):
     async def _update_token_sensors(self, user: int, enrichment: int, output: int):
         """Atualiza os sensores de tokens com os valores recebidos, somando-os."""
         total_tokens: int = user + enrichment + output
+        _LOGGER.debug(f'Total tokens: {total_tokens} = user:{user} + enrichment:{enrichment} + output:{output}')
+        try:
+            total_general: TokenSensor = self._get_sensor_by(SENSOR_TOTAL_GENERAL_TOKEN, self.config.entry_id)
+            total_sensor: TokenSensor = self._get_sensor_by(SENSOR_TOTAL_TOKEN)
+            user_sensor: TokenSensor = self._get_sensor_by(SENSOR_USER_TOKEN)
+            enrichment_sensor: TokenSensor = self._get_sensor_by(SENSOR_ENRICHMENT_TOKEN)
+            output_sensor: TokenSensor = self._get_sensor_by(SENSOR_OUTPUT_TOKEN)
 
-        if DOMAIN not in self.hass.data:
-            _LOGGER.warning("DOMAIN key not initialized in hass.data. Cannot update.")
-            return
+            total_general.update_native_value_adding(total_tokens)
+            total_sensor.update_native_value_adding(total_tokens)
+            user_sensor.update_native_value_adding(user)
+            enrichment_sensor.update_native_value_adding(enrichment)
+            output_sensor.update_native_value_adding(output)
+        except:
+            _LOGGER.error('Erro ao processar tokens')
 
-        total_general: TokenSensor = self.hass.data[DOMAIN].get(SENSOR_TOTAL_GENERAL_TOKEN, 0)
-        total_general.update_native_value_adding(total_tokens)
+    def _get_sensor_by(self, key: str, config_id='sub-entry') -> Optional[TokenSensor]:
+        if config_id == 'sub-entry':
+            config_id = self.config.subentry_id
 
-        if (self._entry_id not in self.hass.data[DOMAIN]
-                or SENSOR_TOKENS_KEY not in self.hass.data[DOMAIN][self._entry_id]):
-            _LOGGER.warning("Token sensors not initialized in hass.data. Cannot update.")
-            return
-
-        total_sensor: TokenSensor = self.hass.data[DOMAIN][self._entry_id][SENSOR_TOKENS_KEY].get(
-            SENSOR_TOTAL_TOKEN)
-        total_sensor.update_native_value_adding(total_tokens)
-
-        user_sensor: TokenSensor = self.hass.data[DOMAIN][self._entry_id][SENSOR_TOKENS_KEY].get(SENSOR_USER_TOKEN)
-        user_sensor.update_native_value_adding(user)
-
-        enrichment_sensor: TokenSensor = self.hass.data[DOMAIN][self._entry_id][SENSOR_TOKENS_KEY].get(
-            SENSOR_ENRICHMENT_TOKEN)
-        enrichment_sensor.update_native_value_adding(enrichment)
-
-        output_sensor: TokenSensor = self.hass.data[DOMAIN][self._entry_id][SENSOR_TOKENS_KEY].get(
-            SENSOR_OUTPUT_TOKEN)
-        output_sensor.update_native_value_adding(output)
+        entity: Entity = self.manager.get_entity_by(config_id, key)
+        if not isinstance(entity, TokenSensor):
+            _LOGGER.error(f'{key} not found valid entity!')
+            return None
+        return entity
 
     async def _get_history(self, conversation_id: str) -> dict:
         ctx: ContextValue = self._history[conversation_id]
@@ -183,7 +171,7 @@ class StackSpotAgent(AbstractConversationAgent):
     async def _add_message(self, conversation_id: str, role: str, content: str):
         ctx: ContextValue = self._history.setdefault(conversation_id, ContextValue())
         ctx.add_message(role, content)
-        ctx.trim(self._entry.options.get(CONF_MAX_MESSAGES_HISTORY))
+        ctx.trim(self.config.max_messages_history)
         _LOGGER.debug(
             f'HISTORY - len: {len(ctx.messages)} | all conversations: {self._history.keys()}')
 

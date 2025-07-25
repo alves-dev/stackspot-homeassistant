@@ -4,42 +4,44 @@ from typing import Literal
 from homeassistant.components.conversation import ConversationEntity, ConversationInput, ConversationResult
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .agent import StackSpotAgent
-from .const import DOMAIN, CONF_AGENT_NAME, AGENTS_KEY
-from .util import get_device_info
+from .const import CONF_AGENT_NAME, SUBENTRY_AGENT
+from .data_utils import StackSpotAgentConfig
+from .util import get_device_info_agent
 
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities) -> None:
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry,
+                            async_add_entities: AddConfigEntryEntitiesCallback) -> None:
     """Set up the StackSpot conversation entity."""
-    entry_id = entry.entry_id
-    agent_name = entry.data.get(CONF_AGENT_NAME)
+    for subentry in entry.subentries.values():
+        if subentry.subentry_type != SUBENTRY_AGENT:
+            continue
 
-    stackspot_agent_instance: StackSpotAgent = hass.data[DOMAIN][AGENTS_KEY].get(entry_id)
+        agent_config = StackSpotAgentConfig.from_entry(entry, subentry)
 
-    if stackspot_agent_instance:
-        async_add_entities([
-            StackSpotConversationEntity(entry_id, agent_name, stackspot_agent_instance)
-        ], True)
-        _LOGGER.debug(f"StackSpot Conversation Entity added for entry {entry_id}.")
-    else:
-        _LOGGER.error(f"StackSpotAgent instance not found for entry {entry_id}. Cannot set up conversation entity.")
+        subentry_id = subentry.subentry_id
+        agent_name = subentry.data.get(CONF_AGENT_NAME)
+        stackspot_agent = StackSpotAgent(hass, agent_config)
+        conversation = StackSpotConversationEntity(subentry_id, agent_name, stackspot_agent)
+        async_add_entities([conversation], True, config_subentry_id=subentry_id)
 
 
 class StackSpotConversationEntity(ConversationEntity):
     """Representa uma entidade de conversação para StackSpot AI."""
 
     _attr_has_entity_name = True
-    _attr_name = None
+    _attr_name = 'Conversation'
 
-    def __init__(self, config_entry_id: str, agent_name: str, agent_instance: StackSpotAgent) -> None:
+    def __init__(self, config_id: str, agent_name: str, agent_instance: StackSpotAgent) -> None:
         """Inicializa a entidade de conversação."""
         self._agent_name = agent_name
         self._agent_instance = agent_instance
-        self._attr_unique_id = f"stackspot_conversation_{config_entry_id}"
-        self._attr_device_info = get_device_info(config_entry_id, agent_name)
+        self._attr_unique_id = f'stackspot_conversation_{config_id}'
+        self._attr_device_info = get_device_info_agent(config_id, agent_name)
 
     @property
     def supported_languages(self) -> list[str] | Literal["*"]:

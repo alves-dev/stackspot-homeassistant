@@ -22,7 +22,7 @@ from .const import (
     CONF_AGENT_NAME,
     CONF_AGENT_NAME_DEFAULT,
     CONF_AGENT_ID,
-    CONF_MAX_MESSAGES_HISTORY,
+    CONF_AGENT_MAX_MESSAGES_HISTORY,
     SUBENTRY_AGENT
 )
 
@@ -144,7 +144,7 @@ class AgentSubentryFlow(ConfigSubentryFlow):
             )
             return new_entry
 
-        max_message = vol.Required(CONF_MAX_MESSAGES_HISTORY, default=10)
+        max_message = vol.Required(CONF_AGENT_MAX_MESSAGES_HISTORY, default=10)
 
         return self.async_show_form(
             step_id="user",
@@ -184,7 +184,7 @@ class AgentSubentryFlow(ConfigSubentryFlow):
             vol.Schema({
                 vol.Required(CONF_AGENT_NAME): str,
                 vol.Required(CONF_AGENT_ID): str,
-                vol.Required(CONF_MAX_MESSAGES_HISTORY): NumberSelector(
+                vol.Required(CONF_AGENT_MAX_MESSAGES_HISTORY): NumberSelector(
                     NumberSelectorConfig(min=2, max=100, step=2, mode=NumberSelectorMode.SLIDER)
                 )
             }),
