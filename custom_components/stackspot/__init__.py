@@ -16,7 +16,8 @@ from .sensor import TokenTotalSensor
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS = [Platform.CONVERSATION, Platform.SENSOR, Platform.SELECT]
+# PLATFORMS = [Platform.CONVERSATION, Platform.SENSOR, Platform.SELECT]
+PLATFORMS = [Platform.CONVERSATION, Platform.SENSOR]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
