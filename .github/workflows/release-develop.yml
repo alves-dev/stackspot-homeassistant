@@ -3,7 +3,7 @@ name: '[DEV] Create Develop Release'
 on:
   push:
     branches:
-      - "**"
+      - "develop"
 
 jobs:
   release:
@@ -25,7 +25,7 @@ jobs:
         with:
           tag_name: develop
           name: develop
-          body: "This is the release release from develop"
+          body: "This is the release from develop"
           draft: false
           prerelease: true
         env:
