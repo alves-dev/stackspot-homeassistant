@@ -3,7 +3,7 @@ name: '[DEV] Create Develop Release'
 on:
   push:
     branches:
-      - "**"
+      - "develop"
 
 jobs:
   release:
@@ -12,6 +12,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Delete existing release
+        run: |
+          gh release delete develop --yes || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create or update tag
         run: |
@@ -25,7 +31,7 @@ jobs:
         with:
           tag_name: develop
           name: develop
-          body: "This is the release release from develop"
+          body: "This is the release from develop"
           draft: false
           prerelease: true
         env:
