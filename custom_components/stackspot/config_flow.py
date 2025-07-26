@@ -32,7 +32,7 @@ _LOGGER = logging.getLogger(__name__)
 @HANDLERS.register(DOMAIN)
 class StackspotConfigFlow(ConfigFlow, domain=DOMAIN):
     """Config flow for Stackspot integration."""
-    VERSION = 2
+    VERSION = 1
 
     @classmethod
     @callback

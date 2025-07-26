@@ -36,12 +36,3 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     return unload_ok
-
-
-# TODO: não faz sentido se não conseguir migrar do 1 para o 2
-async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry):
-    """Handle migration of a config entry."""
-    if entry.version == 1:
-        new_data = {**entry.data, CONF_AGENT_NAME: CONF_AGENT_NAME_DEFAULT}
-        return hass.config_entries.async_update_entry(entry, data=new_data)
-    return entry
