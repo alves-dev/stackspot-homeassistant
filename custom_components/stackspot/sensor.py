@@ -55,7 +55,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry,
 
 
 class TokenGeneralTotalSensor(TokenSensor):
-    _attr_name = "Tokens Totais Geral"
+    _attr_name = "Tokens Total General"
 
     def __init__(self, config_id: str):
         super().__init__(config_id, None)

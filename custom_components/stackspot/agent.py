@@ -150,7 +150,7 @@ class StackSpotAgent(AbstractConversationAgent):
             user_sensor.update_native_value_adding(user)
             enrichment_sensor.update_native_value_adding(enrichment)
             output_sensor.update_native_value_adding(output)
-        except:
+        except Exception:
             _LOGGER.error('Erro ao processar tokens')
 
     def _get_sensor_by(self, key: str, config_id='sub-entry') -> Optional[TokenSensor]:
@@ -173,7 +173,8 @@ class StackSpotAgent(AbstractConversationAgent):
         ctx.add_message(role, content)
         ctx.trim(self.config.max_messages_history)
         _LOGGER.debug(
-            f'HISTORY - len: {len(ctx.messages)} | all conversations: {self._history.keys()}')
+            f'[{self.config.agent_name}] HISTORY - context message: {len(ctx.messages)} of {self.config.max_messages_history}')
+        _LOGGER.debug(f'[{self.config.agent_name}] HISTORY - all conversations: {self._history.keys()}')
 
         await self._cleanup()
 

@@ -60,7 +60,7 @@ class StackSpotAgentConfig:
             subentry_id=subentry.subentry_id,
             agent_id=subentry.data[CONF_AGENT_ID],
             agent_name=subentry.data[CONF_AGENT_NAME],
-            max_messages_history=subentry.data.get(CONF_AGENT_MAX_MESSAGES_HISTORY, 10),
+            max_messages_history=int(subentry.data.get(CONF_AGENT_MAX_MESSAGES_HISTORY, 10)),
             realm=entry.data[CONF_REALM],
             client_id=entry.data[CONF_CLIENT_ID],
             client_key=entry.data[CONF_CLIENT_KEY]

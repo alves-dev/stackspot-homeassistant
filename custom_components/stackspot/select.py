@@ -37,7 +37,7 @@ class TokenResetIntervalSelect(SelectEntity, RestoreEntity):
     """Select entity for token reset interval."""
 
     _attr_has_entity_name = True
-    _attr_name = "Intervalo de Reset de Tokens"
+    _attr_name = "Tokens reset interval"
     _attr_icon = "mdi:calendar-sync"
 
     _attr_options = [
