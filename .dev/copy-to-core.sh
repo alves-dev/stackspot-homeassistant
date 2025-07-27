@@ -1,0 +1,2 @@
+sudo rm -r /home/igor/projects/ha-core/config/custom_components/stackspot/*
+sudo cp -r /home/igor/projects/stackspot-homeassistant/custom_components/stackspot/* /home/igor/projects/ha-core/config/custom_components/stackspot/

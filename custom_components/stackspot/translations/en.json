@@ -1,0 +1,59 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "account_name": "Account name"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "StackSpot - Change {account_name}",
+        "data": {
+          "account_name": "Account name"
+        }
+      }
+    }
+  },
+  "config_subentries": {
+    "agent": {
+      "initiate_flow": {
+        "user": "Add agent",
+        "reconfigure": "Reconfigure Agent"
+      },
+      "entry_type": "StackSpot Agent",
+      "step": {
+        "user": {
+          "title": "StackSpot - New agent",
+          "description": "",
+          "data": {
+            "agent_name": "Agent name",
+            "agent_id": "Agent ID",
+            "max_messages_history": "Maximum number of messages in the history"
+          },
+          "data_description": {
+            "max_messages_history": "Defines how many recent messages will be kept in the history for each section"
+          }
+        },
+        "reconfigure": {
+          "title": "StackSpot - Change {agent_name}",
+          "description": "",
+          "data": {
+            "agent_name": "Agent name",
+            "agent_id": "Agent ID",
+            "max_messages_history": "Maximum number of messages in the history"
+          },
+          "data_description": {
+            "max_messages_history": "Defines how many recent messages will be kept in the history for each section"
+          }
+        }
+      },
+      "abort": {
+        "reconfigure_successful": "Re-configuration was successful"
+      }
+    }
+  }
+}
