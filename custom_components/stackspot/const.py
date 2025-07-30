@@ -15,6 +15,10 @@ CONF_AGENT_NAME = 'agent_name'
 CONF_AGENT_NAME_DEFAULT = 'Agent'
 CONF_AGENT_ID = 'agent_id'
 CONF_AGENT_MAX_MESSAGES_HISTORY = "max_messages_history"
+CONF_AGENT_PROMPT = 'agent_prompt'
+CONF_AGENT_PROMPT_DEFAULT = """{## The variable {{user}} is provided by integration ##}
+My name is {{ user }}
+"""
 
 # CONF OPTIONS
 # CONF_HA_ENTITIES_ACCESS = "ha_entities_access"

@@ -32,10 +32,12 @@
           "data": {
             "agent_name": "Agent name",
             "agent_id": "Agent ID",
-            "max_messages_history": "Maximum number of messages in the history"
+            "max_messages_history": "Maximum number of messages in the history",
+            "agent_prompt": "Prompt"
           },
           "data_description": {
-            "max_messages_history": "Defines how many recent messages will be kept in the history for each section"
+            "max_messages_history": "Defines how many recent messages will be kept in the history for each section",
+            "agent_prompt": "This prompt is rendered by `template`, so you can use variables. He is sending each interaction with the stackspot agent"
           }
         },
         "reconfigure": {
@@ -44,10 +46,12 @@
           "data": {
             "agent_name": "Agent name",
             "agent_id": "Agent ID",
-            "max_messages_history": "Maximum number of messages in the history"
+            "max_messages_history": "Maximum number of messages in the history",
+            "agent_prompt": "Prompt"
           },
           "data_description": {
-            "max_messages_history": "Defines how many recent messages will be kept in the history for each section"
+            "max_messages_history": "Defines how many recent messages will be kept in the history for each section",
+            "agent_prompt": "This prompt is rendered by `template`, so you can use variables. He is sending each interaction with the stackspot agent"
           }
         }
       },

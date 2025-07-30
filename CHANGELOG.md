@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [SemVer](https://semver.org).
 
 ---
+## [1.1.0] - 2025-07-xx
+
+### Added
+- Now you can define a personalized prompt for the agent.
+
+---
 ## [1.0.0] - 2025-07-27
 
 ### Added
