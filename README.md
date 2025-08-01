@@ -38,6 +38,9 @@ After adding and installing the integration, set up with:
 - `client_id` and `client_key`: Are credentials to access your account, and can be purchased [here](https://myaccount.stackspot.com/profile/access-token).
 - `agent`: ID of the agent you want to use, [here](https://www.linkedin.com/pulse/seu-agente-de-ia-do-jeito-igor-moreira-nhu6f/) you can see how to create one.
 - `Maximum number of messages in the history`: Defines how many recent messages will be kept in the history for each section
+- `Prompt`: A template that becomes an additional prompt for the agent. Note that the variable `user` is provided by integration.
+  - List of provided variables available:
+    - `user` - Logged user name
 
 You can have multiple agents, see:
 
@@ -63,6 +66,32 @@ and the general sensor:
 
 ![sensor_tokens.png](.docs/sensor_tokens.png)
 ![sensor_tokens_general.png](.docs/sensor_tokens_general.png)
+
+### Flow
+
+```mermaid
+flowchart TD
+    user_input[User input] --> history_add_input[Add input to history]
+    history_add_input --> history_get[Get full history]
+    history_get --> render_prompt[Render integration prompt template]
+    render_prompt --> assemble_payload[Assemble payload:<br/>- Integration prompt<br/>- History<br/>- Input]
+    assemble_payload --> send_to_stackspot[Send to StackSpot API]
+    send_to_stackspot --> apply_stackspot_prompt
+
+    subgraph StackSpot
+        apply_stackspot_prompt[Apply StackSpot prompt + payload]
+        apply_stackspot_prompt --> call_model[Call StackSpot LLM]
+        call_model --> return_response[Return response]
+    end
+
+    return_response --> history_add_response[Add response to history]
+    return_response --> tokens[Update token count]
+    history_add_response --> user_output["Return to user (HA)"]
+
+    style apply_stackspot_prompt fill: #ed4e2b
+    style call_model fill: #ed4e2b
+    style return_response fill: #ed4e2b
+```
 
 ### Debug
 
