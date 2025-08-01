@@ -8,7 +8,7 @@ from homeassistant.core import callback
 from homeassistant.helpers.selector import (
     NumberSelector,
     NumberSelectorConfig,
-    NumberSelectorMode
+    NumberSelectorMode, TemplateSelector
 )
 
 from .const import (
@@ -23,7 +23,9 @@ from .const import (
     CONF_AGENT_NAME_DEFAULT,
     CONF_AGENT_ID,
     CONF_AGENT_MAX_MESSAGES_HISTORY,
-    SUBENTRY_AGENT
+    SUBENTRY_AGENT,
+    CONF_AGENT_PROMPT,
+    CONF_AGENT_PROMPT_DEFAULT
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -131,6 +133,20 @@ class StackspotOptionsFlowHandler(OptionsFlow):
 #     await hass.config_entries.async_reload(entry_id)
 
 
+def _get_schema_subentry_agent() -> vol.Schema:
+    max_message = vol.Required(CONF_AGENT_MAX_MESSAGES_HISTORY, default=10)
+    prompt = vol.Optional(CONF_AGENT_PROMPT, default=CONF_AGENT_PROMPT_DEFAULT)
+
+    return vol.Schema({
+        vol.Required(CONF_AGENT_NAME, default=CONF_AGENT_NAME_DEFAULT): str,
+        vol.Required(CONF_AGENT_ID): str,
+        max_message: NumberSelector(
+            NumberSelectorConfig(min=2, max=100, step=2, mode=NumberSelectorMode.SLIDER)
+        ),
+        prompt: TemplateSelector()
+    })
+
+
 class AgentSubentryFlow(ConfigSubentryFlow):
     """Flow para adicionar agentes individuais."""
 
@@ -144,17 +160,9 @@ class AgentSubentryFlow(ConfigSubentryFlow):
             )
             return new_entry
 
-        max_message = vol.Required(CONF_AGENT_MAX_MESSAGES_HISTORY, default=10)
-
         return self.async_show_form(
             step_id="user",
-            data_schema=vol.Schema({
-                vol.Required(CONF_AGENT_NAME, default=CONF_AGENT_NAME_DEFAULT): str,
-                vol.Required(CONF_AGENT_ID): str,
-                max_message: NumberSelector(
-                    NumberSelectorConfig(min=2, max=100, step=2, mode=NumberSelectorMode.SLIDER)
-                )
-            })
+            data_schema=_get_schema_subentry_agent()
         )
 
     async def async_step_reconfigure(
@@ -181,13 +189,7 @@ class AgentSubentryFlow(ConfigSubentryFlow):
         current_data = self._get_reconfigure_subentry().data
 
         data_schema = self.add_suggested_values_to_schema(
-            vol.Schema({
-                vol.Required(CONF_AGENT_NAME): str,
-                vol.Required(CONF_AGENT_ID): str,
-                vol.Required(CONF_AGENT_MAX_MESSAGES_HISTORY): NumberSelector(
-                    NumberSelectorConfig(min=2, max=100, step=2, mode=NumberSelectorMode.SLIDER)
-                )
-            }),
+            _get_schema_subentry_agent(),
             current_data
         )
 

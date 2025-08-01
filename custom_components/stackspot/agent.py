@@ -5,6 +5,7 @@ from datetime import datetime, UTC
 from typing import Literal, Optional
 
 import aiohttp
+from homeassistant.auth.models import User
 from homeassistant.components.conversation import (
     AbstractConversationAgent,
     ConversationResult,
@@ -25,8 +26,9 @@ from .const import (
     SECONDS_KEEP_CONVERSATION_HISTORY,
     SENSOR_TOTAL_GENERAL_TOKEN
 )
-from .data_utils import ContextValue, StackSpotAgentConfig
+from .data_utils import ContextValue, StackSpotAgentConfig, MessageRole
 from .entities.token_sensor import TokenSensor
+from .util import render_template
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -54,12 +56,20 @@ class StackSpotAgent(AbstractConversationAgent):
     async def async_process(self, user_input: ConversationInput) -> ConversationResult:
         """Processa a entrada do usuário e retorna a resposta."""
 
+        # User
+        user: User = await self.hass.auth.async_get_user(user_input.context.user_id)
+        user_name = user.name
+
         # History
-        await self._add_message(user_input.conversation_id, 'user', user_input.text)
+        await self._add_message(user_input.conversation_id, MessageRole.USER, user_input.text)
         payload = await self._get_history(user_input.conversation_id)
 
-        text_response = await self._send_prompt_to_stackspot(str(payload))
-        await self._add_message(user_input.conversation_id, 'assistant', text_response)
+        # Prompt
+        prompt = await self._get_prompt({'user': user_name})
+        message = f'{prompt} \n {str(payload)}'
+
+        text_response = await self._send_prompt_to_stackspot(message)
+        await self._add_message(user_input.conversation_id, MessageRole.ASSISTANT, text_response)
 
         # Empacota a resposta para o Home Assistant
         intent_response = intent.IntentResponse(language=user_input.language)
@@ -168,7 +178,7 @@ class StackSpotAgent(AbstractConversationAgent):
         messages = ctx.get_history()
         return {'history': messages}
 
-    async def _add_message(self, conversation_id: str, role: str, content: str):
+    async def _add_message(self, conversation_id: str, role: MessageRole, content: str):
         ctx: ContextValue = self._history.setdefault(conversation_id, ContextValue())
         ctx.add_message(role, content)
         ctx.trim(self.config.max_messages_history)
@@ -184,3 +194,7 @@ class StackSpotAgent(AbstractConversationAgent):
             if (now - ctx.last_interaction).total_seconds() > SECONDS_KEEP_CONVERSATION_HISTORY:
                 del self._history[cid]
                 _LOGGER.debug(f'Conversation {cid} deleted!')
+
+    async def _get_prompt(self, variables: dict[str: any]) -> str:
+        render = await render_template(self.hass, self.config.prompt, variables)
+        return str(render)
