@@ -1,16 +1,34 @@
 from dataclasses import dataclass, field
 from datetime import datetime, UTC, timezone
-from typing import Literal, List
+from enum import StrEnum
+from typing import List
 
 from homeassistant.config_entries import ConfigEntry, ConfigSubentry
 
-from custom_components.stackspot.const import CONF_AGENT_ID, CONF_AGENT_NAME, CONF_CLIENT_ID, CONF_REALM, \
-    CONF_CLIENT_KEY, CONF_AGENT_MAX_MESSAGES_HISTORY
+from custom_components.stackspot.const import (
+    CONF_AGENT_ID,
+    CONF_AGENT_NAME,
+    CONF_CLIENT_ID,
+    CONF_REALM,
+    CONF_CLIENT_KEY,
+    CONF_AGENT_MAX_MESSAGES_HISTORY,
+    CONF_AGENT_PROMPT,
+    CONF_AGENT_PROMPT_DEFAULT
+)
+
+
+class MessageRole(StrEnum):
+    """Role of a chat message."""
+
+    SYSTEM = "system"  # prompt
+    USER = "user"
+    ASSISTANT = "assistant"
+    # TOOL = "tool"
 
 
 @dataclass
 class Message:
-    role: Literal["user", "assistant", "system"]
+    role: MessageRole
     content: str
 
 
@@ -19,7 +37,7 @@ class ContextValue:
     messages: List[Message] = field(default_factory=list)
     last_interaction: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
-    def add_message(self, role: Literal["user", "assistant", "system"], content: str) -> None:
+    def add_message(self, role: MessageRole, content: str) -> None:
         msg = Message(role=role, content=content)
         self.messages.append(msg)
         self.last_interaction = datetime.now(UTC)
@@ -27,7 +45,7 @@ class ContextValue:
     def get_history(self) -> list[dict]:
         return [
             {
-                "role": msg.role,
+                "role": msg.role.value,
                 "content": msg.content
             }
             for msg in self.messages
@@ -52,16 +70,18 @@ class StackSpotAgentConfig:
     client_id: str
     client_key: str
     max_messages_history: int
+    prompt: str
 
     @classmethod
     def from_entry(cls, entry: ConfigEntry, subentry: ConfigSubentry) -> "StackSpotAgentConfig":
         return cls(
             entry_id=entry.entry_id,
             subentry_id=subentry.subentry_id,
-            agent_id=subentry.data[CONF_AGENT_ID],
             agent_name=subentry.data[CONF_AGENT_NAME],
-            max_messages_history=int(subentry.data.get(CONF_AGENT_MAX_MESSAGES_HISTORY, 10)),
+            agent_id=subentry.data[CONF_AGENT_ID],
             realm=entry.data[CONF_REALM],
             client_id=entry.data[CONF_CLIENT_ID],
-            client_key=entry.data[CONF_CLIENT_KEY]
+            client_key=entry.data[CONF_CLIENT_KEY],
+            max_messages_history=int(subentry.data.get(CONF_AGENT_MAX_MESSAGES_HISTORY, 10)),
+            prompt=subentry.data.get(CONF_AGENT_PROMPT, CONF_AGENT_PROMPT_DEFAULT)
         )

@@ -32,10 +32,12 @@
           "data": {
             "agent_name": "Nome do agente",
             "agent_id": "Agente ID",
-            "max_messages_history": "Número máximo de mensagens no histórico"
+            "max_messages_history": "Número máximo de mensagens no histórico",
+            "agent_prompt": "Prompt"
           },
           "data_description": {
-            "max_messages_history": "Define quantas mensagens recentes serão mantidas no histórico para cada seção"
+            "max_messages_history": "Define quantas mensagens recentes serão mantidas no histórico para cada seção",
+            "agent_prompt": "Este prompt é renderizado pela `template`, então você pode usar variáveis. Ele é enviado a cada interação com o agente ds StackSpot"
           }
         },
         "reconfigure": {
@@ -44,10 +46,12 @@
           "data": {
             "agent_name": "Nome do agente",
             "agent_id": "Agente ID",
-            "max_messages_history": "Número máximo de mensagens no histórico"
+            "max_messages_history": "Número máximo de mensagens no histórico",
+            "agent_prompt": "Prompt"
           },
           "data_description": {
-            "max_messages_history": "Define quantas mensagens recentes serão mantidas no histórico para cada seção"
+            "max_messages_history": "Define quantas mensagens recentes serão mantidas no histórico para cada seção",
+            "agent_prompt": "Este prompt é renderizado pela `template`, então você pode usar variáveis. Ele é enviado a cada interação com o agente ds StackSpot"
           }
         }
       },
