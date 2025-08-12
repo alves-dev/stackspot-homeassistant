@@ -4,7 +4,6 @@ from json import JSONDecodeError
 
 from homeassistant.components.ai_task import AITaskEntity, AITaskEntityFeature, GenDataTask, GenDataTaskResult
 from homeassistant.components.conversation import ChatLog
-from homeassistant.components.ollama.entity import OllamaBaseLLMEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
@@ -38,7 +37,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry,
         async_add_entities([task], config_subentry_id=subentry.subentry_id)
 
 
-class StackSportAiTaskEntity(AITaskEntity, OllamaBaseLLMEntity):
+class StackSportAiTaskEntity(AITaskEntity):
     """AI Task entity."""
 
     _attr_has_entity_name = True
