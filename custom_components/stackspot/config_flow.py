@@ -1,10 +1,11 @@
+import asyncio
 import logging
 from typing import Any
 
 import voluptuous as vol
 from homeassistant.config_entries import HANDLERS, ConfigFlow, ConfigEntry, ConfigSubentryFlow, \
     SubentryFlowResult, OptionsFlow
-from homeassistant.core import callback
+from homeassistant.core import callback, HomeAssistant
 from homeassistant.helpers.selector import (
     NumberSelector,
     NumberSelectorConfig,
@@ -24,8 +25,14 @@ from .const import (
     CONF_AGENT_ID,
     CONF_AGENT_MAX_MESSAGES_HISTORY,
     SUBENTRY_AGENT,
+    SUBENTRY_AI_TASK,
     CONF_AGENT_PROMPT,
-    CONF_AGENT_PROMPT_DEFAULT
+    CONF_AGENT_PROMPT_DEFAULT,
+    CONF_AI_TASK_PROMPT,
+    CONF_AI_TASK_PROMPT_DEFAULT,
+    CONF_AI_TASK_NAME,
+    CONF_AI_TASK_AGENT_ID,
+    CONF_AI_TASK_NAME_DEFAULT
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -43,7 +50,8 @@ class StackspotConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> dict[str, type[ConfigSubentryFlow]]:
         """Return subentries supported by this integration."""
         return {
-            SUBENTRY_AGENT: AgentSubentryFlow
+            SUBENTRY_AGENT: AgentSubentryFlow,
+            SUBENTRY_AI_TASK: AiTaskSubentryFlow
         }
 
     async def async_step_user(self, user_input=None):
@@ -128,11 +136,6 @@ class StackspotOptionsFlowHandler(OptionsFlow):
         )
 
 
-# async def async_configure_later(hass: HomeAssistant, entry_id: str) -> None:
-#     await asyncio.sleep(1)
-#     await hass.config_entries.async_reload(entry_id)
-
-
 def _get_schema_subentry_agent() -> vol.Schema:
     max_message = vol.Required(CONF_AGENT_MAX_MESSAGES_HISTORY, default=10)
     prompt = vol.Optional(CONF_AGENT_PROMPT, default=CONF_AGENT_PROMPT_DEFAULT)
@@ -147,6 +150,21 @@ def _get_schema_subentry_agent() -> vol.Schema:
     })
 
 
+def _get_schema_subentry_task() -> vol.Schema:
+    prompt = vol.Optional(CONF_AI_TASK_PROMPT, default=CONF_AI_TASK_PROMPT_DEFAULT)
+
+    return vol.Schema({
+        vol.Required(CONF_AI_TASK_NAME, default=CONF_AI_TASK_NAME_DEFAULT): str,
+        vol.Required(CONF_AI_TASK_AGENT_ID): str,
+        prompt: TemplateSelector()
+    })
+
+
+async def async_configure_later(hass: HomeAssistant, entry_id: str) -> None:
+    await asyncio.sleep(1)
+    await hass.config_entries.async_reload(entry_id)
+
+
 class AgentSubentryFlow(ConfigSubentryFlow):
     """Flow para adicionar agentes individuais."""
 
@@ -154,10 +172,7 @@ class AgentSubentryFlow(ConfigSubentryFlow):
         if user_input is not None:
             _LOGGER.debug("Subentry data: %s", user_input)
             new_entry = self.async_create_entry(title=user_input[CONF_AGENT_ID], data=user_input)
-            # self.hass.async_create_task(async_configure_later(self.hass, self._entry_id))
-            self.hass.async_create_task(
-                self.hass.config_entries.async_reload(self._entry_id)
-            )
+            self.hass.async_create_task(async_configure_later(self.hass, self._entry_id))
             return new_entry
 
         return self.async_show_form(
@@ -198,5 +213,57 @@ class AgentSubentryFlow(ConfigSubentryFlow):
             data_schema=data_schema,
             description_placeholders={
                 "agent_name": current_data.get(CONF_AGENT_NAME, "Agent")
+            }
+        )
+
+
+class AiTaskSubentryFlow(ConfigSubentryFlow):
+    """Flow para adicionar AI task."""
+
+    async def async_step_user(self, user_input=None):
+        if user_input is not None:
+            _LOGGER.debug("Subentry data: %s", user_input)
+            new_entry = self.async_create_entry(title=user_input[CONF_AGENT_ID], data=user_input)
+            self.hass.async_create_task(async_configure_later(self.hass, self._entry_id))
+            return new_entry
+
+        return self.async_show_form(
+            step_id="user",
+            data_schema=_get_schema_subentry_task()
+        )
+
+    async def async_step_reconfigure(
+            self, user_input: dict[str, Any] | None = None
+    ) -> SubentryFlowResult:
+        """Handle reconfigure step for an existing AI task."""
+
+        if user_input is not None:
+            _LOGGER.debug("Subentry data (reconfigure): %s", user_input)
+
+            result = self.async_update_and_abort(
+                self._get_entry(),
+                self._get_reconfigure_subentry(),
+                data=user_input,
+                title=user_input[CONF_AGENT_ID]
+            )
+
+            self.hass.async_create_task(
+                self.hass.config_entries.async_reload(self._entry_id)
+            )
+
+            return result
+
+        current_data = self._get_reconfigure_subentry().data
+
+        data_schema = self.add_suggested_values_to_schema(
+            _get_schema_subentry_task(),
+            current_data
+        )
+
+        return self.async_show_form(
+            step_id="reconfigure",
+            data_schema=data_schema,
+            description_placeholders={
+                "agent_task_name": current_data.get(CONF_AI_TASK_NAME, "Task")
             }
         )

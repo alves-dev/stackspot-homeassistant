@@ -85,3 +85,17 @@ class StackSpotAgentConfig:
             max_messages_history=int(subentry.data.get(CONF_AGENT_MAX_MESSAGES_HISTORY, 10)),
             prompt=subentry.data.get(CONF_AGENT_PROMPT, CONF_AGENT_PROMPT_DEFAULT)
         )
+
+    @classmethod
+    def from_entry_for_task(cls, entry: ConfigEntry, subentry: ConfigSubentry) -> "StackSpotAgentConfig":
+        return cls(
+            entry_id=entry.entry_id,
+            subentry_id=subentry.subentry_id,
+            agent_name=subentry.data[CONF_AGENT_NAME],
+            agent_id=subentry.data[CONF_AGENT_ID],
+            realm=entry.data[CONF_REALM],
+            client_id=entry.data[CONF_CLIENT_ID],
+            client_key=entry.data[CONF_CLIENT_KEY],
+            max_messages_history=0,
+            prompt=subentry.data.get(CONF_AGENT_PROMPT, CONF_AGENT_PROMPT_DEFAULT)
+        )
