@@ -24,7 +24,7 @@
         "user": "Adicionar agente",
         "reconfigure": "Reconfigurar agente"
       },
-      "entry_type": "StackSpot Agent",
+      "entry_type": "Agente da StackSpot",
       "step": {
         "user": {
           "title": "StackSpot - Novo agente",
@@ -52,6 +52,42 @@
           "data_description": {
             "max_messages_history": "Define quantas mensagens recentes serão mantidas no histórico para cada seção",
             "agent_prompt": "Este prompt é renderizado pela `template`, então você pode usar variáveis. Ele é enviado a cada interação com o agente ds StackSpot"
+          }
+        }
+      },
+      "abort": {
+        "reconfigure_successful": "Alteração realizada com sucesso"
+      }
+    },
+    "ai_task": {
+      "initiate_flow": {
+        "user": "Adicionar agente para tarefas de IA",
+        "reconfigure": "Reconfigurar agente de tarefas"
+      },
+      "entry_type": "Agente da StackSpot para tarefas de IA",
+      "step": {
+        "user": {
+          "title": "StackSpot - Nova tarefa de IA",
+          "description": "",
+          "data": {
+            "agent_name": "Nome do agente de tarefa",
+            "agent_id": "Agente ID",
+            "agent_prompt": "Prompt para a tarefa"
+          },
+          "data_description": {
+            "agent_prompt": "Este prompt é renderizado pela `template`, então você pode usar variáveis"
+          }
+        },
+        "reconfigure": {
+          "title": "StackSpot - Alterando a tarefa {agent_task_name}",
+          "description": "",
+          "data": {
+            "agent_name": "Nome do agente de tarefa",
+            "agent_id": "Agente ID",
+            "agent_prompt": "Prompt para a tarefa"
+          },
+          "data_description": {
+            "agent_prompt": "Este prompt é renderizado pela `template`, então você pode usar variáveis"
           }
         }
       },

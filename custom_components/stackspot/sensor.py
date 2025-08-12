@@ -11,8 +11,10 @@ from .const import (
     SENSOR_ENRICHMENT_TOKEN,
     SENSOR_OUTPUT_TOKEN,
     SENSOR_TOTAL_TOKEN,
-    CONF_AGENT_NAME,
-    SENSOR_TOTAL_GENERAL_TOKEN, SUBENTRY_AGENT, MANAGER
+    SENSOR_TOTAL_GENERAL_TOKEN,
+    SUBENTRY_AGENT,
+    MANAGER,
+    SUBENTRY_AI_TASK
 )
 from .entities.token_sensor import TokenSensor
 from .util import get_device_general
@@ -27,11 +29,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry,
     manager: StackSpotEntityManager = hass.data[DOMAIN][MANAGER]
 
     for subentry in entry.subentries.values():
-        if subentry.subentry_type != SUBENTRY_AGENT:
+        if subentry.subentry_type != SUBENTRY_AGENT and subentry.subentry_type != SUBENTRY_AI_TASK:
             continue
 
         subentry_id = subentry.subentry_id
-        agent_name = subentry.data.get(CONF_AGENT_NAME)
+        agent_name = subentry.data.get('agent_name')
 
         total_sensor = TokenTotalSensor(subentry_id, agent_name)
         user_sensor = TokenUserSensor(subentry_id, agent_name)

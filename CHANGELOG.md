@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [SemVer](https://semver.org).
 
 ---
+## [1.2.0] - 2025-08-12
+
+### Added
+- Added AI task support:
+  - You can now create a new input to generate data with an agent.
+  - See: https://www.home-assistant.io/integrations/ai_task
+  - **Note:** Requires Home Assistant in version `2025.8.0`
+
+---
 ## [1.1.0] - 2025-08-01
 
 ### Added

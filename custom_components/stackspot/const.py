@@ -1,3 +1,5 @@
+from homeassistant.helpers import llm
+
 INTEGRATION_NAME = 'StackSpot AI'
 DOMAIN = 'stackspot'
 MANAGER = 'key-manager'
@@ -16,9 +18,26 @@ CONF_AGENT_NAME_DEFAULT = 'Agent'
 CONF_AGENT_ID = 'agent_id'
 CONF_AGENT_MAX_MESSAGES_HISTORY = "max_messages_history"
 CONF_AGENT_PROMPT = 'agent_prompt'
-CONF_AGENT_PROMPT_DEFAULT = """{## The variable {{user}} is provided by integration ##}
-My name is {{ user }}
-"""
+CONF_AGENT_PROMPT_DEFAULT = (
+        llm.BASE_PROMPT
+        + '\n'
+        + llm.DEFAULT_INSTRUCTIONS_PROMPT
+        + '\n'
+        '{## The variable {{user}} is provided by integration ##}'
+        '\n'
+        'My name is {{ user }}'
+)
+
+# CONF AI TASK
+CONF_AI_TASK_NAME = 'agent_name'
+CONF_AI_TASK_NAME_DEFAULT = 'StackSpot AI task'
+CONF_AI_TASK_AGENT_ID = 'agent_id'
+CONF_AI_TASK_PROMPT = 'agent_prompt'
+CONF_AI_TASK_PROMPT_DEFAULT = (
+    llm.BASE_PROMPT
+    + '\n'
+    + llm.DEFAULT_INSTRUCTIONS_PROMPT
+)
 
 # CONF OPTIONS
 # CONF_HA_ENTITIES_ACCESS = "ha_entities_access"
@@ -46,3 +65,4 @@ SELECT_RESET_INTERVAL_ENTITY = "token_reset_interval_select"
 
 # TYPES SUBENTRY
 SUBENTRY_AGENT = 'agent'
+SUBENTRY_AI_TASK = 'ai_task'
