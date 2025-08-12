@@ -58,6 +58,42 @@
       "abort": {
         "reconfigure_successful": "Re-configuration was successful"
       }
+    },
+    "ai_task": {
+      "initiate_flow": {
+        "user": "Add AI task",
+        "reconfigure": "Reconfigure AI task"
+      },
+      "entry_type": "StackSpot Agent for AI tasks",
+      "step": {
+        "user": {
+          "title": "StackSpot - New AI task",
+          "description": "",
+          "data": {
+            "agent_name": "Agent task name",
+            "agent_id": "Agent ID",
+            "agent_prompt": "Prompt for task"
+          },
+          "data_description": {
+            "agent_prompt": "This prompt is rendered by `template`, so you can use variables"
+          }
+        },
+        "reconfigure": {
+          "title": "StackSpot - Change task {agent_task_name}",
+          "description": "",
+          "data": {
+            "agent_name": "Agent task name",
+            "agent_id": "Agent ID",
+            "agent_prompt": "Prompt"
+          },
+          "data_description": {
+            "agent_prompt": "This prompt is rendered by `template`, so you can use variables"
+          }
+        }
+      },
+      "abort": {
+        "reconfigure_successful": "Re-configuration was successful"
+      }
     }
   }
 }

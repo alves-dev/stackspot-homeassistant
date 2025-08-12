@@ -76,6 +76,15 @@ class StackSpotAgent(AbstractConversationAgent):
         intent_response.async_set_speech(text_response)
         return ConversationResult(response=intent_response, conversation_id=user_input.conversation_id)
 
+
+    async def process_task(self, prompt_task: str) -> str:
+        # Prompt
+        agent_prompt = await self._get_prompt({'user': 'unknown'})
+        message = f'{agent_prompt} \n {prompt_task}'
+
+        text_response = await self._send_prompt_to_stackspot(message)
+        return text_response
+
     async def _get_access_token(self) -> str | None:
         """Obtém o token de acesso da Stackspot AI."""
         # TODO: Validar se token ainda é valido

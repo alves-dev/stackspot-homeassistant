@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Integration StackSpot AI with Home Assistant"
 requires-python = ">=3.13.5"
 dependencies = [
-    "homeassistant>=2025.4.4",
+    "homeassistant>=2025.8.0",
 ]
 
 [dependency-groups]

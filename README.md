@@ -17,9 +17,22 @@ Which is a platform of AI, where you can easily create your custom agents with v
 Just have an account on the Stackspot platform: [Create Freemium Account](https://ai.stackspot.com)
 
 ### Functionality
+
+- Conversation
+- AI task - Requires HA `2025.8+`
+
+#### Conversation
 Allows you to create multiple agents for the same account and have a control over the use of tokens.
 
 ![interaction.png](.docs/interaction.png)
+
+#### AI task
+To learn more, access: [integrations AI Task](https://www.home-assistant.io/integrations/ai_task)
+
+![ai-task_call.png](.docs/ai-task_call.png)
+![ai-task_response.png](.docs/ai-task_response.png)
+
+**Note:** Still can't stand attachments
 
 ### Installation
 Integration can be adding via HACS, just click the following button:
