@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [SemVer](https://semver.org).
 
 ---
+## [1.2.1] - 2025-08-14
+
+### Fix
+- Token validation correction when expired
+
+---
 ## [1.2.0] - 2025-08-12
 
 ### Added
