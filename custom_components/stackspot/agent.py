@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, UTC
+from datetime import datetime, UTC, timedelta
 from typing import Literal, Optional
 
-import aiohttp
 from homeassistant.auth.models import User
 from homeassistant.components.conversation import (
     AbstractConversationAgent,
@@ -16,6 +15,7 @@ from homeassistant.helpers import intent
 from homeassistant.helpers.entity import Entity
 
 from . import StackSpotEntityManager
+from .client.stackspot_client import StackSpotApiClient
 from .const import (
     DOMAIN,
     MANAGER,
@@ -40,8 +40,9 @@ class StackSpotAgent(AbstractConversationAgent):
         self.manager: StackSpotEntityManager = hass.data[DOMAIN][MANAGER]
         self.config: StackSpotAgentConfig = config
         self._access_token: str | None = None
-        self._session = aiohttp.ClientSession()
+        self._expires_token: datetime | None = None
         self._history: dict[str, ContextValue] = {}
+        self._api: StackSpotApiClient = StackSpotApiClient()
 
     @property
     def supported_languages(self) -> list[str] | Literal["*"]:
@@ -76,7 +77,6 @@ class StackSpotAgent(AbstractConversationAgent):
         intent_response.async_set_speech(text_response)
         return ConversationResult(response=intent_response, conversation_id=user_input.conversation_id)
 
-
     async def process_task(self, prompt_task: str) -> str:
         # Prompt
         agent_prompt = await self._get_prompt({'user': 'unknown'})
@@ -85,63 +85,39 @@ class StackSpotAgent(AbstractConversationAgent):
         text_response = await self._send_prompt_to_stackspot(message)
         return text_response
 
-    async def _get_access_token(self) -> str | None:
+    async def _get_access_token(self, force_new=False) -> str | None:
         """Obtém o token de acesso da Stackspot AI."""
-        # TODO: Validar se token ainda é valido
-        if self._access_token:
+        if not force_new and self._access_token and datetime.now() < self._expires_token:
             return self._access_token
 
-        token_url = f"https://idm.stackspot.com/{self.config.realm}/oidc/oauth/token"
-        headers = {"Content-Type": "application/x-www-form-urlencoded"}
-        data = {
-            "grant_type": "client_credentials",
-            "client_id": self.config.client_id,
-            "client_secret": self.config.client_key,
-        }
-
+        token_data = await self._api.generate_access_token(self.config.realm, self.config.client_id,
+                                                           self.config.client_key)
         try:
-            async with self._session.post(token_url, headers=headers, data=data) as response:
-                response.raise_for_status()
-                token_data = await response.json()
-                self._access_token = token_data.get("access_token")
-                _LOGGER.debug("Token da Stackspot AI obtido com sucesso.")
-                return self._access_token
-        except aiohttp.ClientError as e:
+            self._access_token = token_data.get("access_token")
+            expires_in_seconds = token_data.get("expires_in")
+            self._expires_token = datetime.now() + timedelta(seconds=expires_in_seconds)
+
+            return self._access_token
+        except Exception as e:
             _LOGGER.error(f"Erro ao obter token da Stackspot AI: {e}")
             return None
 
-    async def _send_prompt_to_stackspot(self, prompt: str, retaining=False) -> str:
+    async def _send_prompt_to_stackspot(self, prompt: str) -> str:
         """Envia o prompt para a Stackspot AI e retorna a resposta."""
         access_token = await self._get_access_token()
         if not access_token:
-            return "Desculpe, não consegui me autenticar com a Stackspot AI."
+            return "Sorry, I couldn't authenticate myself with Stackspot there."
 
-        chat_url = f"https://genai-inference-app.stackspot.com/v1/agent/{self.config.agent_id}/chat"
-        headers = {
-            "Authorization": f"Bearer {access_token}",
-            "Content-Type": "application/json",
-        }
-        payload = {
-            "streaming": False,
-            "user_prompt": prompt,
-            "stackspot_knowledge": False,
-            "return_ks_in_response": False,
-        }
+        response = await self._api.send_prompt(access_token, self.config.agent_id, prompt)
+        if response.get('error', False):
+            access_token = await self._get_access_token(force_new=True)
+            response = await self._api.send_prompt(access_token, self.config.agent_id, prompt)
 
-        try:
-            async with self._session.post(chat_url, headers=headers, json=payload) as response:
-                if response.status == 401 and retaining == False:
-                    _LOGGER.info('Token expirado, removendo o atual.')
-                    self._access_token = None
-                    await self._send_prompt_to_stackspot(prompt, retaining=True)
+        if response.get('error', False):
+            return 'Sorry, I had a problem when communicating with stackspot there.'
 
-                response.raise_for_status()
-                response_data = await response.json()
-                await self._actions_with_response(response_data)
-                return response_data.get("message", "Nenhuma resposta da Stackspot AI.")
-        except aiohttp.ClientError as e:
-            _LOGGER.error(f"Erro ao enviar prompt para Stackspot AI: {e}")
-            return "Desculpe, tive um problema ao me comunicar com a Stackspot AI."
+        await self._actions_with_response(response)
+        return response.get("message", "No Stackspot Awards Ai.")
 
     async def _actions_with_response(self, response: dict) -> None:
         if "tokens" in response and isinstance(response["tokens"], dict):
