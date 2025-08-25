@@ -50,6 +50,7 @@ After adding and installing the integration, set up with:
 - `realm`: For account freemium use `stackspot-freemium`
 - `client_id` and `client_key`: Are credentials to access your account, and can be purchased [here](https://myaccount.stackspot.com/profile/access-token).
 - `agent`: ID of the agent you want to use, [here](https://www.linkedin.com/pulse/seu-agente-de-ia-do-jeito-igor-moreira-nhu6f/) you can see how to create one.
+  - The correct ID is the one in the URL, see this comment to help you get the correct ID: [issues 5 comment](https://github.com/alves-dev/stackspot-homeassistant/issues/5#issuecomment-3219962172)
 - `Maximum number of messages in the history`: Defines how many recent messages will be kept in the history for each section
 - `Prompt`: A template that becomes an additional prompt for the agent. Note that the variable `user` is provided by integration.
   - List of provided variables available:
