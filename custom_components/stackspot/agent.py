@@ -10,6 +10,7 @@ from homeassistant.components.conversation import (
     ConversationResult,
     ConversationInput
 )
+from homeassistant.const import STATE_UNKNOWN
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import intent
 from homeassistant.helpers.entity import Entity
@@ -24,7 +25,8 @@ from .const import (
     SENSOR_ENRICHMENT_TOKEN,
     SENSOR_TOTAL_TOKEN,
     SECONDS_KEEP_CONVERSATION_HISTORY,
-    SENSOR_TOTAL_GENERAL_TOKEN
+    SENSOR_TOTAL_GENERAL_TOKEN,
+    TEMPLATE_KEY_USER
 )
 from .data_utils import ContextValue, StackSpotAgentConfig, MessageRole
 from .entities.token_sensor import TokenSensor
@@ -59,14 +61,16 @@ class StackSpotAgent(AbstractConversationAgent):
 
         # User
         user: User = await self.hass.auth.async_get_user(user_input.context.user_id)
-        user_name = user.name
+        user_name = STATE_UNKNOWN
+        if user:
+            user_name = user.name
 
         # History
         await self._add_message(user_input.conversation_id, MessageRole.USER, user_input.text)
         payload = await self._get_history(user_input.conversation_id)
 
         # Prompt
-        prompt = await self._get_prompt({'user': user_name})
+        prompt = await self._get_prompt({TEMPLATE_KEY_USER: user_name})
         message = f'{prompt} \n {str(payload)}'
 
         text_response = await self._send_prompt_to_stackspot(message)
@@ -79,7 +83,7 @@ class StackSpotAgent(AbstractConversationAgent):
 
     async def process_task(self, prompt_task: str) -> str:
         # Prompt
-        agent_prompt = await self._get_prompt({'user': 'unknown'})
+        agent_prompt = await self._get_prompt({TEMPLATE_KEY_USER: STATE_UNKNOWN})
         message = f'{agent_prompt} \n {prompt_task}'
 
         text_response = await self._send_prompt_to_stackspot(message)

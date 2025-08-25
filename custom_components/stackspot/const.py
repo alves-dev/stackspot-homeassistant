@@ -66,3 +66,6 @@ SELECT_RESET_INTERVAL_ENTITY = "token_reset_interval_select"
 # TYPES SUBENTRY
 SUBENTRY_AGENT = 'agent'
 SUBENTRY_AI_TASK = 'ai_task'
+
+# Template Key
+TEMPLATE_KEY_USER= 'user'

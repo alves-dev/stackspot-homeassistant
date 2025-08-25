@@ -53,7 +53,7 @@ After adding and installing the integration, set up with:
 - `Maximum number of messages in the history`: Defines how many recent messages will be kept in the history for each section
 - `Prompt`: A template that becomes an additional prompt for the agent. Note that the variable `user` is provided by integration.
   - List of provided variables available:
-    - `user` - Logged user name
+    - `user` - Logged user name (This only works when the assist is called via chat in the UI)
 
 You can have multiple agents, see:
 
