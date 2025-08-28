@@ -68,4 +68,5 @@ SUBENTRY_AGENT = 'agent'
 SUBENTRY_AI_TASK = 'ai_task'
 
 # Template Key
-TEMPLATE_KEY_USER= 'user'
+TEMPLATE_KEY_USER = 'user'
+TEMPLATE_KEY_EXPOSED_ENTITIES = 'exposed_entities'

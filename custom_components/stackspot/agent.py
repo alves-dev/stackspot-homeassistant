@@ -26,7 +26,8 @@ from .const import (
     SENSOR_TOTAL_TOKEN,
     SECONDS_KEEP_CONVERSATION_HISTORY,
     SENSOR_TOTAL_GENERAL_TOKEN,
-    TEMPLATE_KEY_USER
+    TEMPLATE_KEY_USER,
+    TEMPLATE_KEY_EXPOSED_ENTITIES
 )
 from .data_utils import ContextValue, StackSpotAgentConfig, MessageRole
 from .entities.token_sensor import TokenSensor
@@ -185,5 +186,6 @@ class StackSpotAgent(AbstractConversationAgent):
                 _LOGGER.debug(f'Conversation {cid} deleted!')
 
     async def _get_prompt(self, variables: dict[str: any]) -> str:
+        variables[TEMPLATE_KEY_EXPOSED_ENTITIES] = self.manager.get_object_by(TEMPLATE_KEY_EXPOSED_ENTITIES)
         render = await render_template(self.hass, self.config.prompt, variables)
         return str(render)

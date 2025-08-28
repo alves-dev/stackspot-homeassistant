@@ -9,6 +9,7 @@ _LOGGER = logging.getLogger(__name__)
 class StackSpotEntityManager:
     _instance: Optional["StackSpotEntityManager"] = None
     _entities: Dict[str, Dict[str, Entity]] = {}
+    _objects: Dict[str, any] = {}
 
     def __new__(cls):
         """Implementa o padrão Singleton."""
@@ -33,6 +34,13 @@ class StackSpotEntityManager:
         self._entities[entry_id][key] = entity
         _LOGGER.debug(f"Entity '{key}' added for entry_id: {entry_id}")
 
+    def add_objetc(self, key: str, obj: any) -> None:
+        """
+        Adiciona um objeto qualquer ao gerenciador, vinculando-o a uma chave.
+        """
+        self._objects[key] = obj
+        _LOGGER.debug(f"'{key}' added")
+
     def get_entity_by(self, entry_id: str, key: str) -> Optional[Entity]:
         """
         Recupera uma entidade a partir da config_id (entry_id) e da key.
@@ -40,6 +48,15 @@ class StackSpotEntityManager:
         if entry_id in self._entities and key in self._entities[entry_id]:
             return self._entities[entry_id][key]
         _LOGGER.warning(f"Entity '{key}' not found for entry_id: {entry_id}")
+        return None
+
+    def get_object_by(self, key: str) -> Optional[any]:
+        """
+        Recupera um objeto a partir da key.
+        """
+        if key in self._objects:
+            return self._objects[key]
+        _LOGGER.warning(f"'{key}' not found in objects!")
         return None
 
     def remove_entry(self, entry_id: str) -> None:

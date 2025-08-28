@@ -55,6 +55,15 @@ After adding and installing the integration, set up with:
 - `Prompt`: A template that becomes an additional prompt for the agent. Note that the variable `user` is provided by integration.
   - List of provided variables available:
     - `user` - Logged user name (This only works when the assist is called via chat in the UI)
+    - `exposed_entities` - A list of entities exposed with their alias, [see](https://www.home-assistant.io/voice_control/voice_remote_expose_devices/)
+      - The object looks like this:
+      ```json
+      [{
+      'entity_id': 'input_boolean.tv_room', 
+      'name': 'TV room', 
+      'aliases': ['tv', 'alias 2']
+      }]
+      ```
 
 You can have multiple agents, see:
 
