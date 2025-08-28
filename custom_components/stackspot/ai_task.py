@@ -33,11 +33,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry,
         agent_name = subentry.data.get('agent_name')
         stackspot_agent = StackSpotAgent(hass, agent_config)
 
-        task = StackSportAiTaskEntity(subentry_id, agent_name, stackspot_agent)
+        task = StackSpotAiTaskEntity(subentry_id, agent_name, stackspot_agent)
         async_add_entities([task], config_subentry_id=subentry.subentry_id)
 
 
-class StackSportAiTaskEntity(AITaskEntity):
+class StackSpotAiTaskEntity(AITaskEntity):
     """AI Task entity."""
 
     _attr_has_entity_name = True
