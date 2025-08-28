@@ -23,9 +23,9 @@ CONF_AGENT_PROMPT_DEFAULT = (
         + '\n'
         + llm.DEFAULT_INSTRUCTIONS_PROMPT
         + '\n'
-        '{## The variable {{user}} is provided by integration ##}'
-        '\n'
-        'My name is {{ user }}'
+          '{## The variable {{user}} is provided by integration ##}'
+          '\n'
+          'My name is {{ user }}'
 )
 
 # CONF AI TASK
@@ -34,10 +34,23 @@ CONF_AI_TASK_NAME_DEFAULT = 'StackSpot AI task'
 CONF_AI_TASK_AGENT_ID = 'agent_id'
 CONF_AI_TASK_PROMPT = 'agent_prompt'
 CONF_AI_TASK_PROMPT_DEFAULT = (
-    llm.BASE_PROMPT
-    + '\n'
-    + llm.DEFAULT_INSTRUCTIONS_PROMPT
+        llm.BASE_PROMPT
+        + '\n'
+        + llm.DEFAULT_INSTRUCTIONS_PROMPT
 )
+
+# CONF KS
+CONF_KS_NAME = 'ks_name'
+CONF_KS_NAME_DEFAULT = 'HA: Entities'
+CONF_KS_SLUG = 'ks_slug'
+CONF_KS_TEMPLATE = 'ks_template'
+CONF_KS_TEMPLATE_DEFAULT = (
+    '{## The variable {{exposed_entities}} is provided by integration ##}'
+    '\n'
+    'Exposed entities and their aliases: {{ exposed_entities }}'
+)
+CONF_KS_INTERVAL_UPDATE = 'interval_update'
+CONF_KS_INTERVAL_UPDATE_DEFAULT = {'days': 0, 'hours': 48, 'minutes': 0, 'seconds': 0}
 
 # CONF OPTIONS
 # CONF_HA_ENTITIES_ACCESS = "ha_entities_access"
@@ -54,6 +67,7 @@ SENSOR_TOTAL_TOKEN = 'total_tokens'
 SENSOR_USER_TOKEN = 'user_tokens'
 SENSOR_ENRICHMENT_TOKEN = 'enrichment_tokens'
 SENSOR_OUTPUT_TOKEN = 'output_tokens'
+SENSOR_KS_LAST_UPDATE = 'ks_last_update'
 
 # AGENTS
 AGENTS_KEY = 'agents'
@@ -66,6 +80,7 @@ SELECT_RESET_INTERVAL_ENTITY = "token_reset_interval_select"
 # TYPES SUBENTRY
 SUBENTRY_AGENT = 'agent'
 SUBENTRY_AI_TASK = 'ai_task'
+SUBENTRY_KS = 'knowledge_source'
 
 # Template Key
 TEMPLATE_KEY_USER = 'user'

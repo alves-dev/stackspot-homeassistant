@@ -94,6 +94,44 @@
       "abort": {
         "reconfigure_successful": "Alteração realizada com sucesso"
       }
+    },
+    "knowledge_source": {
+      "initiate_flow": {
+        "user": "Adicionar KS",
+        "reconfigure": "Reconfigurar KS"
+      },
+      "entry_type": "Knowledge Source StackSpot",
+      "step": {
+        "user": {
+          "title": "StackSpot - Novo Knowledge Source",
+          "description": "Os Ks são usados para dar aos agentes mais contexto, leia: https://ai.stackspot.com/docs/pt-br/knowledge-source/ks \n Depois de criar KS, você deve acessar a Stackspot e vincular-o ao seu agente",
+          "data": {
+            "ks_name": "Nome do KS",
+            "ks_template": "Template",
+            "interval_update": "Intervalo para atualização"
+          },
+          "data_description": {
+            "ks_template": "Este modelo será rederizado e o resultado será enviado ao KS, você também pode usar as variáveis fornecidas pela integração.",
+            "interval_update": "Intervalo de tempo que a integração deve atualizar o KS com o valor da template."
+          }
+        },
+        "reconfigure": {
+          "title": "StackSpot - Alterando o KS {ks_name}",
+          "description": "Acesse o KS: https://ai.stackspot.com/knowledge-sources/{ks_slug}?tabindex=0",
+          "data": {
+            "ks_name": "Nome do KS",
+            "ks_template": "Template",
+            "interval_update": "Intervalo para atualização"
+          },
+          "data_description": {
+            "ks_template": "Este modelo será rederizado e o resultado será enviado ao KS, você também pode usar as variáveis fornecidas pela integração.",
+            "interval_update": "Intervalo de tempo que a integração deve atualizar o KS com o valor da template."
+          }
+        }
+      },
+      "abort": {
+        "reconfigure_successful": "Alteração realizada com sucesso"
+      }
     }
   }
 }

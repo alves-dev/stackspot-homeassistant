@@ -4,6 +4,7 @@ from enum import StrEnum
 from typing import List
 
 from homeassistant.config_entries import ConfigEntry, ConfigSubentry
+from homeassistant.const import STATE_UNKNOWN
 
 from custom_components.stackspot.const import (
     CONF_AGENT_ID,
@@ -13,7 +14,11 @@ from custom_components.stackspot.const import (
     CONF_CLIENT_KEY,
     CONF_AGENT_MAX_MESSAGES_HISTORY,
     CONF_AGENT_PROMPT,
-    CONF_AGENT_PROMPT_DEFAULT
+    CONF_AGENT_PROMPT_DEFAULT,
+    CONF_KS_NAME,
+    CONF_KS_SLUG,
+    CONF_KS_TEMPLATE,
+    CONF_KS_TEMPLATE_DEFAULT,
 )
 
 
@@ -98,4 +103,37 @@ class StackSpotAgentConfig:
             client_key=entry.data[CONF_CLIENT_KEY],
             max_messages_history=0,
             prompt=subentry.data.get(CONF_AGENT_PROMPT, CONF_AGENT_PROMPT_DEFAULT)
+        )
+
+
+@dataclass(frozen=True)
+class StackSpotLogin:
+    """Dataclass para request token StackSpot."""
+    realm: str
+    client_id: str
+    client_key: str
+
+    @classmethod
+    def from_entry(cls, entry: ConfigEntry) -> "StackSpotLogin":
+        return cls(
+            realm=entry.data[CONF_REALM],
+            client_id=entry.data[CONF_CLIENT_ID],
+            client_key=entry.data[CONF_CLIENT_KEY]
+        )
+
+
+@dataclass(frozen=True)
+class KSData:
+    subentry_id: str
+    name: str
+    slug: str
+    template: str
+
+    @classmethod
+    def from_entry(cls, subentry: ConfigSubentry) -> "KSData":
+        return cls(
+            subentry_id=subentry.subentry_id,
+            name=subentry.data.get(CONF_KS_NAME, STATE_UNKNOWN),
+            slug=subentry.data.get(CONF_KS_SLUG, STATE_UNKNOWN),
+            template=subentry.data.get(CONF_KS_TEMPLATE, CONF_KS_TEMPLATE_DEFAULT),
         )

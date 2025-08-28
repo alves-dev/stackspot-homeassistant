@@ -10,6 +10,9 @@ and this project adheres to [SemVer](https://semver.org).
 
 ### Added
 - New variable `exposed_entities` for prompts
+- KS (knowledge-source)
+  - They are used to give agents more context, you can store information on them and the agent will be enriched with them
+  - see: https://ai.stackspot.com/docs/knowledge-source/ks
 
 ---
 ## [1.2.2] - 2025-08-25

@@ -61,3 +61,80 @@ class StackSpotApiClient:
             return {
                 'error': True
             }
+
+    async def create_knowledge_sources(self, access_token: str, name: str, slug: str) -> dict:
+        """Cria um knowledge-sources KS"""
+
+        url = 'https://data-integration-api.stackspot.com/v1/knowledge-sources'
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json",
+        }
+
+        payload = {
+            "slug": slug,
+            "name": name,
+            "description": f'Description {name}',
+            "type": "custom",
+        }
+
+        try:
+            async with self._session.post(url, headers=headers, json=payload) as response:
+                if response.status == 422:
+                    _LOGGER.debug("KS already created!")
+                    return {
+                        'slug': slug
+                    }
+
+                response.raise_for_status()
+                _LOGGER.debug("KS created!")
+                response_data = await response.json()
+                return response_data
+        except aiohttp.ClientError as e:
+            _LOGGER.error(f"Erro ao criar KS no Stackspot AI: {e}")
+            return {
+                'error': True
+            }
+
+    async def add_content_knowledge_sources(self, access_token: str, slug: str, content: str) -> dict:
+        """Cria um knowledge-sources KS"""
+
+        url = f'https://genai-code-buddy-api.stackspot.com/v1/knowledge-sources/{slug}/custom'
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json",
+        }
+        payload = {
+            "content": content,
+        }
+
+        try:
+            async with self._session.post(url, headers=headers, json=payload) as response:
+                response.raise_for_status()
+                _LOGGER.debug("KS content added!")
+                response_data = await response.json()
+                return response_data
+        except aiohttp.ClientError as e:
+            _LOGGER.error(f"Erro ao adicionar content no KS no Stackspot AI: {e}")
+            return {
+                'error': True
+            }
+
+    async def clear_objects_knowledge_sources(self, access_token: str, slug: str):
+        url = f'https://data-integration-api.stackspot.com/v1/knowledge-sources/{slug}/objects'
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json",
+        }
+
+        try:
+            async with self._session.delete(url, headers=headers) as response:
+                response.raise_for_status()
+                _LOGGER.debug("KS objects delete!")
+                response_data = await response.json()
+                return response_data
+        except aiohttp.ClientError as e:
+            _LOGGER.error(f"Erro ao tentar limpar os objetos no KS no Stackspot AI: {e}")
+            return {
+                'error': True
+            }

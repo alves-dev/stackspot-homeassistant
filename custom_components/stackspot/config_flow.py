@@ -3,13 +3,19 @@ import logging
 from typing import Any
 
 import voluptuous as vol
-from homeassistant.config_entries import HANDLERS, ConfigFlow, ConfigEntry, ConfigSubentryFlow, \
-    SubentryFlowResult, OptionsFlow
+from homeassistant.config_entries import (
+    HANDLERS,
+    ConfigFlow,
+    ConfigEntry,
+    ConfigSubentryFlow,
+    SubentryFlowResult,
+    OptionsFlow)
+from homeassistant.const import STATE_UNKNOWN
 from homeassistant.core import callback, HomeAssistant
 from homeassistant.helpers.selector import (
     NumberSelector,
     NumberSelectorConfig,
-    NumberSelectorMode, TemplateSelector
+    NumberSelectorMode, TemplateSelector, DurationSelector, DurationSelectorConfig
 )
 
 from .const import (
@@ -32,8 +38,17 @@ from .const import (
     CONF_AI_TASK_PROMPT_DEFAULT,
     CONF_AI_TASK_NAME,
     CONF_AI_TASK_AGENT_ID,
-    CONF_AI_TASK_NAME_DEFAULT
+    CONF_AI_TASK_NAME_DEFAULT,
+    SUBENTRY_KS,
+    CONF_KS_NAME,
+    CONF_KS_NAME_DEFAULT,
+    CONF_KS_SLUG,
+    CONF_KS_INTERVAL_UPDATE,
+    CONF_KS_INTERVAL_UPDATE_DEFAULT,
+    CONF_KS_TEMPLATE,
+    CONF_KS_TEMPLATE_DEFAULT,
 )
+from .util import create_slug
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -51,7 +66,8 @@ class StackspotConfigFlow(ConfigFlow, domain=DOMAIN):
         """Return subentries supported by this integration."""
         return {
             SUBENTRY_AGENT: AgentSubentryFlow,
-            SUBENTRY_AI_TASK: AiTaskSubentryFlow
+            SUBENTRY_AI_TASK: AiTaskSubentryFlow,
+            SUBENTRY_KS: KSSubentryFlow,
         }
 
     async def async_step_user(self, user_input=None):
@@ -160,6 +176,16 @@ def _get_schema_subentry_task() -> vol.Schema:
     })
 
 
+def _get_schema_subentry_ks() -> vol.Schema:
+    return vol.Schema({
+        vol.Required(CONF_KS_NAME, default=CONF_KS_NAME_DEFAULT): str,
+        vol.Required(CONF_KS_TEMPLATE, default=CONF_KS_TEMPLATE_DEFAULT): TemplateSelector(),
+        vol.Required(CONF_KS_INTERVAL_UPDATE, default=CONF_KS_INTERVAL_UPDATE_DEFAULT): DurationSelector(
+            DurationSelectorConfig(enable_day=True)
+        )
+    })
+
+
 async def async_configure_later(hass: HomeAssistant, entry_id: str) -> None:
     await asyncio.sleep(1)
     await hass.config_entries.async_reload(entry_id)
@@ -265,5 +291,61 @@ class AiTaskSubentryFlow(ConfigSubentryFlow):
             data_schema=data_schema,
             description_placeholders={
                 "agent_task_name": current_data.get(CONF_AI_TASK_NAME, "Task")
+            }
+        )
+
+
+class KSSubentryFlow(ConfigSubentryFlow):
+    """Flow para adicionar AI task."""
+
+    async def async_step_user(self, user_input=None):
+        if user_input is not None:
+            user_input[CONF_KS_SLUG] = create_slug(user_input[CONF_KS_NAME])
+            _LOGGER.debug("Subentry data: %s", user_input)
+            new_entry = self.async_create_entry(title=user_input[CONF_KS_NAME], data=user_input)
+            self.hass.async_create_task(async_configure_later(self.hass, self._entry_id))
+            return new_entry
+
+        return self.async_show_form(
+            step_id="user",
+            data_schema=_get_schema_subentry_ks()
+        )
+
+    async def async_step_reconfigure(
+            self, user_input: dict[str, Any] | None = None
+    ) -> SubentryFlowResult:
+        """Handle reconfigure step for an existing AI task."""
+
+        current_data = self._get_reconfigure_subentry().data
+        slug = current_data.get(CONF_KS_SLUG, STATE_UNKNOWN)
+
+        if user_input is not None:
+            user_input[CONF_KS_SLUG] = slug
+            _LOGGER.debug("Subentry data (reconfigure): %s", user_input)
+
+            result = self.async_update_and_abort(
+                self._get_entry(),
+                self._get_reconfigure_subentry(),
+                data=user_input,
+                title=user_input[CONF_KS_NAME]
+            )
+
+            self.hass.async_create_task(
+                self.hass.config_entries.async_reload(self._entry_id)
+            )
+
+            return result
+
+        data_schema = self.add_suggested_values_to_schema(
+            _get_schema_subentry_ks(),
+            current_data
+        )
+
+        return self.async_show_form(
+            step_id="reconfigure",
+            data_schema=data_schema,
+            description_placeholders={
+                CONF_KS_NAME: current_data.get(CONF_KS_NAME, STATE_UNKNOWN),
+                CONF_KS_SLUG: slug
             }
         )

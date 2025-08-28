@@ -20,6 +20,7 @@ Just have an account on the Stackspot platform: [Create Freemium Account](https:
 
 - Conversation
 - AI task - Requires HA `2025.8+`
+- KS: More context with Knowledge Sources by StackSpot - Requires integration `1.3.0+`
 
 #### Conversation
 Allows you to create multiple agents for the same account and have a control over the use of tokens.
@@ -33,6 +34,19 @@ To learn more, access: [integrations AI Task](https://www.home-assistant.io/inte
 ![ai-task_response.png](.docs/ai-task_response.png)
 
 **Note:** Still can't stand attachments
+
+#### KS - Knowledge Sources
+
+![ks_create.png](.docs/ks_create.png)
+![ks_device.png](.docs/ks_device.png)
+When clicking on `Visit` you will be sent to the StackSpot page with the open KS
+
+![ks_stackspot.png](.docs/ks_stackspot.png)
+
+- When creating a KS, a device is created with the same name and a sensor indicating the last update.
+- There is a background task that updates KS content as configured in the creation.
+
+To learn more: [knowledge-source](https://ai.stackspot.com/docs/knowledge-source/ks)
 
 ### Installation
 Integration can be adding via HACS, just click the following button:
@@ -129,4 +143,4 @@ logger:
 
 ### Limitations
 
-At the moment the integration is not yet able to access their entities, as well as will not be able to change status of their entities.
+From the `1.3.0` version the agent may be aware of his entities in some way, being through KS or Prompts, but is not yet able to change the status of the entities.
