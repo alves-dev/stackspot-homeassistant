@@ -59,9 +59,9 @@ After adding and installing the integration, set up with:
       - The object looks like this:
       ```json
       [{
-      'entity_id': 'input_boolean.tv_room', 
-      'name': 'TV room', 
-      'aliases': ['tv', 'alias 2']
+      "entity_id": "input_boolean.tv_room", 
+      "name": "TV room", 
+      "aliases": ["tv", "alias 2"]
       }]
       ```
 
