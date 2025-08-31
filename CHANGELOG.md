@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [SemVer](https://semver.org).
 
 ---
+## [1.3.0] - 2025-08-31
+
+### Added
+- New variable `exposed_entities` for prompts
+- KS (knowledge-source)
+  - They are used to give agents more context, you can store information on them and the agent will be enriched with them
+  - see: https://ai.stackspot.com/docs/knowledge-source/ks
+
+---
 ## [1.2.2] - 2025-08-25
 
 ### Fix

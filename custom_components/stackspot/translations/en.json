@@ -94,6 +94,44 @@
       "abort": {
         "reconfigure_successful": "Re-configuration was successful"
       }
+    },
+    "knowledge_source": {
+      "initiate_flow": {
+        "user": "Create KS",
+        "reconfigure": "Reconfigure KS"
+      },
+      "entry_type": "StackSpot Knowledge Source",
+      "step": {
+        "user": {
+          "title": "StackSpot - New Knowledge Source",
+          "description": "KS are used to give agents more context, please read: https://ai.stackspot.com/docs/knowledge-source/ks \nAfter creating KS you should access Stackspot there and link it to your agent",
+          "data": {
+            "ks_name": "KS name",
+            "ks_template": "Template",
+            "interval_update": "Update interval"
+          },
+          "data_description": {
+            "ks_template": "This template will be redevised and the result will be sent to KS, you can also use the variables provided by the integration.",
+            "interval_update": "Time interval that integration must update the KS with the template value."
+          }
+        },
+        "reconfigure": {
+          "title": "StackSpot - Change KS {ks_name}",
+          "description": "Access the KS: https://ai.stackspot.com/knowledge-sources/{ks_slug}?tabIndex=0",
+          "data": {
+            "ks_name": "KS name",
+            "ks_template": "Template",
+            "interval_update": "Update interval"
+          },
+          "data_description": {
+            "ks_template": "This template will be redevised and the result will be sent to KS, you can also use the variables provided by the integration.",
+            "interval_update": "Time interval that integration must update the KS with the template value."
+          }
+        }
+      },
+      "abort": {
+        "reconfigure_successful": "Re-configuration was successful"
+      }
     }
   }
 }
