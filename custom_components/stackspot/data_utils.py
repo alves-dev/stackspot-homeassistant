@@ -25,10 +25,10 @@ from custom_components.stackspot.const import (
 class MessageRole(StrEnum):
     """Role of a chat message."""
 
-    SYSTEM = "system"  # prompt
+    #SYSTEM = "system"  # prompt
     USER = "user"
     ASSISTANT = "assistant"
-    # TOOL = "tool"
+    TOOL = "tool"
 
 
 @dataclass

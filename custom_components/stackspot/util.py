@@ -3,6 +3,9 @@ import re
 import unicodedata
 from typing import Any
 
+from homeassistant.auth.models import User
+from homeassistant.components.conversation import ConversationInput
+from homeassistant.const import STATE_UNKNOWN
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry
 from homeassistant.helpers.device_registry import DeviceInfo, DeviceEntryType
@@ -96,3 +99,10 @@ def create_slug(text: str) -> str:
     slug = re.sub(r'[\s-]+', '-', slug).strip('-')
 
     return slug
+
+
+async def get_username_by_conversation_input(hass: HomeAssistant, conversation: ConversationInput) -> str:
+    user: User = await hass.auth.async_get_user(conversation.context.user_id)
+    if user:
+        return user.name
+    return STATE_UNKNOWN

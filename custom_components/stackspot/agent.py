@@ -1,12 +1,11 @@
 from __future__ import annotations
 
+import json
 import logging
 from datetime import datetime, UTC, timedelta
-from typing import Literal, Optional
+from typing import Optional
 
-from homeassistant.auth.models import User
 from homeassistant.components.conversation import (
-    AbstractConversationAgent,
     ConversationResult,
     ConversationInput
 )
@@ -31,12 +30,13 @@ from .const import (
 )
 from .data_utils import ContextValue, StackSpotAgentConfig, MessageRole
 from .entities.token_sensor import TokenSensor
-from .util import render_template
+from .tools import PROMPT_TOOLS, process_response_tools
+from .util import render_template, get_username_by_conversation_input
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class StackSpotAgent(AbstractConversationAgent):
+class StackSpotAgent:
     def __init__(self, hass: HomeAssistant, config: StackSpotAgentConfig) -> None:
         """Inicializa o agente com as configurações."""
         self.hass: HomeAssistant = hass
@@ -47,44 +47,42 @@ class StackSpotAgent(AbstractConversationAgent):
         self._history: dict[str, ContextValue] = {}
         self._api: StackSpotApiClient = StackSpotApiClient()
 
-    @property
-    def supported_languages(self) -> list[str] | Literal["*"]:
-        return '*'
-
-    async def async_close_session(self) -> None:
-        """Fecha a sessão aiohttp."""
-        if self._session and not self._session.closed:
-            await self._session.close()
-            _LOGGER.debug(f"aiohttp session closed for agent {self.config.agent_name}.")
-
     async def async_process(self, user_input: ConversationInput) -> ConversationResult:
         """Processa a entrada do usuário e retorna a resposta."""
-
-        # User
-        user: User = await self.hass.auth.async_get_user(user_input.context.user_id)
-        user_name = STATE_UNKNOWN
-        if user:
-            user_name = user.name
-
         # History
         await self._add_message(user_input.conversation_id, MessageRole.USER, user_input.text)
-        payload = await self._get_history(user_input.conversation_id)
 
-        # Prompt
-        prompt = await self._get_prompt({TEMPLATE_KEY_USER: user_name})
-        message = f'{prompt} \n {str(payload)}'
+        text_response = await self._run_agent(user_input)
 
-        text_response = await self._send_prompt_to_stackspot(message)
-        await self._add_message(user_input.conversation_id, MessageRole.ASSISTANT, text_response)
-
-        # Empacota a resposta para o Home Assistant
         intent_response = intent.IntentResponse(language=user_input.language)
         intent_response.async_set_speech(text_response)
         return ConversationResult(response=intent_response, conversation_id=user_input.conversation_id)
 
+    async def _run_agent(self, user_input: ConversationInput) -> str:
+        """
+        Loop recursivo: envia prompt pro LLM,
+        executa tools se necessário e continua até resposta final.
+        """
+        final_prompt = await self._get_final_prompt(user_input)
+
+        text_response = await self._send_prompt_to_stackspot(final_prompt)
+        await self._add_message(user_input.conversation_id, MessageRole.ASSISTANT, text_response)
+
+        process_tool = await process_response_tools(self.hass, text_response)
+        if process_tool and process_tool["tools"]:
+            await self._add_message(
+                user_input.conversation_id,
+                MessageRole.TOOL,
+                process_tool["content"]
+            )
+
+            return await self._run_agent(user_input)
+
+        return text_response
+
     async def process_task(self, prompt_task: str) -> str:
         # Prompt
-        agent_prompt = await self._get_prompt({TEMPLATE_KEY_USER: STATE_UNKNOWN})
+        agent_prompt = await self._get_system_prompt({TEMPLATE_KEY_USER: STATE_UNKNOWN})
         message = f'{agent_prompt} \n {prompt_task}'
 
         text_response = await self._send_prompt_to_stackspot(message)
@@ -163,10 +161,11 @@ class StackSpotAgent(AbstractConversationAgent):
             return None
         return entity
 
-    async def _get_history(self, conversation_id: str) -> dict:
+    async def _get_history(self, conversation_id: str) -> str:
         ctx: ContextValue = self._history[conversation_id]
-        messages = ctx.get_history()
-        return {'history': messages}
+        messages: list[dict] = ctx.get_history()
+
+        return f"<history>\n{json.dumps(messages, indent=2, ensure_ascii=False)}\n</history>"
 
     async def _add_message(self, conversation_id: str, role: MessageRole, content: str):
         ctx: ContextValue = self._history.setdefault(conversation_id, ContextValue())
@@ -185,7 +184,15 @@ class StackSpotAgent(AbstractConversationAgent):
                 del self._history[cid]
                 _LOGGER.debug(f'Conversation {cid} deleted!')
 
-    async def _get_prompt(self, variables: dict[str: any]) -> str:
+    async def _get_system_prompt(self, variables: dict[str: any]) -> str:
         variables[TEMPLATE_KEY_EXPOSED_ENTITIES] = self.manager.get_object_by(TEMPLATE_KEY_EXPOSED_ENTITIES)
         render = await render_template(self.hass, self.config.prompt, variables)
-        return str(render)
+        return f"<system_prompt>\n{str(render)}\n</system_prompt>"
+
+    async def _get_final_prompt(self, user_input: ConversationInput) -> str:
+        user: str = await get_username_by_conversation_input(self.hass, user_input)
+
+        system_prompt: str = await self._get_system_prompt({TEMPLATE_KEY_USER: user})
+        history_prompt: str = await self._get_history(user_input.conversation_id)
+
+        return f'{system_prompt}\n\n{str(history_prompt)} \n{PROMPT_TOOLS}'
