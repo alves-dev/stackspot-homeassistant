@@ -59,6 +59,7 @@ async def process_exposed_entities(hass: HomeAssistant) -> None:
     if remove_listener is not None:
         remove_listener()
 
+    await get_list_exposed_entities(hass)
     async def task(now: datetime) -> None:
         await get_list_exposed_entities(hass)
 
