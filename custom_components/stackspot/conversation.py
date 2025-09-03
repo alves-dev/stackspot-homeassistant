@@ -45,14 +45,10 @@ class StackSpotConversationEntity(ConversationEntity):
 
     @property
     def supported_languages(self) -> list[str] | Literal["*"]:
-        return self._agent_instance.supported_languages
+        return '*'
 
     async def async_process(self, user_input: ConversationInput) -> ConversationResult:
         """Processa a entrada do usuário e retorna a resposta."""
         _LOGGER.debug(f"CONVERSATION: agent '{self._agent_name}' -> '{user_input.text}'")
 
         return await self._agent_instance.async_process(user_input)
-
-    async def async_will_remove_from_hass(self) -> None:
-        """Chamado quando a entidade está prestes a ser removida."""
-        await self._agent_instance.async_close_session()
