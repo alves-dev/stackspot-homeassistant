@@ -19,6 +19,8 @@ from custom_components.stackspot.const import (
     CONF_KS_SLUG,
     CONF_KS_TEMPLATE,
     CONF_KS_TEMPLATE_DEFAULT,
+    CONF_AGENT_ALLOW_CONTROL,
+    CONF_AGENT_ALLOW_CONTROL_DEFAULT,
 )
 
 
@@ -76,6 +78,7 @@ class StackSpotAgentConfig:
     client_key: str
     max_messages_history: int
     prompt: str
+    allow_control: bool
 
     @classmethod
     def from_entry(cls, entry: ConfigEntry, subentry: ConfigSubentry) -> "StackSpotAgentConfig":
@@ -88,7 +91,8 @@ class StackSpotAgentConfig:
             client_id=entry.data[CONF_CLIENT_ID],
             client_key=entry.data[CONF_CLIENT_KEY],
             max_messages_history=int(subentry.data.get(CONF_AGENT_MAX_MESSAGES_HISTORY, 10)),
-            prompt=subentry.data.get(CONF_AGENT_PROMPT, CONF_AGENT_PROMPT_DEFAULT)
+            prompt=subentry.data.get(CONF_AGENT_PROMPT, CONF_AGENT_PROMPT_DEFAULT),
+            allow_control=subentry.data.get(CONF_AGENT_ALLOW_CONTROL, CONF_AGENT_ALLOW_CONTROL_DEFAULT),
         )
 
     @classmethod
@@ -102,7 +106,8 @@ class StackSpotAgentConfig:
             client_id=entry.data[CONF_CLIENT_ID],
             client_key=entry.data[CONF_CLIENT_KEY],
             max_messages_history=0,
-            prompt=subentry.data.get(CONF_AGENT_PROMPT, CONF_AGENT_PROMPT_DEFAULT)
+            prompt=subentry.data.get(CONF_AGENT_PROMPT, CONF_AGENT_PROMPT_DEFAULT),
+            allow_control=False,
         )
 
 

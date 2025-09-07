@@ -15,7 +15,11 @@ from homeassistant.core import callback, HomeAssistant
 from homeassistant.helpers.selector import (
     NumberSelector,
     NumberSelectorConfig,
-    NumberSelectorMode, TemplateSelector, DurationSelector, DurationSelectorConfig
+    NumberSelectorMode,
+    TemplateSelector,
+    DurationSelector,
+    DurationSelectorConfig,
+    BooleanSelector,
 )
 
 from .const import (
@@ -47,6 +51,8 @@ from .const import (
     CONF_KS_INTERVAL_UPDATE_DEFAULT,
     CONF_KS_TEMPLATE,
     CONF_KS_TEMPLATE_DEFAULT,
+    CONF_AGENT_ALLOW_CONTROL,
+    CONF_AGENT_ALLOW_CONTROL_DEFAULT,
 )
 from .util import create_slug
 
@@ -155,6 +161,7 @@ class StackspotOptionsFlowHandler(OptionsFlow):
 def _get_schema_subentry_agent() -> vol.Schema:
     max_message = vol.Required(CONF_AGENT_MAX_MESSAGES_HISTORY, default=10)
     prompt = vol.Optional(CONF_AGENT_PROMPT, default=CONF_AGENT_PROMPT_DEFAULT)
+    allow_control = vol.Required(CONF_AGENT_ALLOW_CONTROL, default=CONF_AGENT_ALLOW_CONTROL_DEFAULT)
 
     return vol.Schema({
         vol.Required(CONF_AGENT_NAME, default=CONF_AGENT_NAME_DEFAULT): str,
@@ -162,6 +169,7 @@ def _get_schema_subentry_agent() -> vol.Schema:
         max_message: NumberSelector(
             NumberSelectorConfig(min=2, max=100, step=2, mode=NumberSelectorMode.SLIDER)
         ),
+        allow_control: BooleanSelector(),
         prompt: TemplateSelector()
     })
 

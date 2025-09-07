@@ -33,10 +33,12 @@
             "agent_name": "Nome do agente",
             "agent_id": "Agente ID",
             "max_messages_history": "Número máximo de mensagens no histórico",
+            "allow_control": "Permitir controle",
             "agent_prompt": "Prompt"
           },
           "data_description": {
             "max_messages_history": "Define quantas mensagens recentes serão mantidas no histórico para cada seção",
+            "allow_control": "Permitir que o agente possa controlar suas entidades, isso permiti acesso as tools por parte do agente",
             "agent_prompt": "Este prompt é renderizado pela `template`, então você pode usar variáveis. Ele é enviado a cada interação com o agente ds StackSpot"
           }
         },
@@ -47,10 +49,12 @@
             "agent_name": "Nome do agente",
             "agent_id": "Agente ID",
             "max_messages_history": "Número máximo de mensagens no histórico",
+            "allow_control": "Permitir controle",
             "agent_prompt": "Prompt"
           },
           "data_description": {
             "max_messages_history": "Define quantas mensagens recentes serão mantidas no histórico para cada seção",
+            "allow_control": "Permitir que o agente possa controlar suas entidades, isso permiti acesso as tools por parte do agente",
             "agent_prompt": "Este prompt é renderizado pela `template`, então você pode usar variáveis. Ele é enviado a cada interação com o agente ds StackSpot"
           }
         }

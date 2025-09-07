@@ -68,6 +68,9 @@ class StackSpotAgent:
         text_response = await self._send_prompt_to_stackspot(final_prompt)
         await self._add_message(user_input.conversation_id, MessageRole.ASSISTANT, text_response)
 
+        if not self.config.allow_control:
+            return text_response
+
         process_tool = await process_response_tools(self.hass, text_response)
         if process_tool and process_tool["tools"]:
             await self._add_message(
@@ -195,4 +198,6 @@ class StackSpotAgent:
         system_prompt: str = await self._get_system_prompt({TEMPLATE_KEY_USER: user})
         history_prompt: str = await self._get_history(user_input.conversation_id)
 
-        return f'{system_prompt}\n\n{str(history_prompt)} \n{PROMPT_TOOLS}'
+        if self.config.allow_control:
+            return f'{system_prompt}\n\n{str(history_prompt)} \n{PROMPT_TOOLS}'
+        return f'{system_prompt}\n\n{str(history_prompt)}'
