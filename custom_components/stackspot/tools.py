@@ -89,7 +89,7 @@ class Tool:
 
 class EntityStateTool(Tool):
     name = "get_entity_state"
-    description = "Obtém o estado de uma entidade pelo ID"
+    description = "Obtains the state of an entity by the id"
     parameters = {
         "entity_id": "string"
     }
@@ -109,7 +109,7 @@ class EntityStateTool(Tool):
 
 class CallServiceTool(Tool):
     name = "call_service"
-    description = "Chama um serviço no Home Assistant"
+    description = "Call a service on home assistant"
     parameters = {
         "domain": "string",
         "service": "string",
@@ -129,10 +129,43 @@ class CallServiceTool(Tool):
             return ToolResult.of_fail(tool_input.identifier, {"error": str(e)})
 
 
-_tools: list[dict] = [EntityStateTool().to_dict(), CallServiceTool().to_dict()]
+class GetTodoItemsTool(Tool):
+    name = "get_todo_items"
+    description = "Get items from a Home Assistant to-do list. Possible status: ['needs_action', 'completed']"
+    parameters = {
+        "entity_id": "string",
+        "status": ["string"]
+    }
+
+    async def async_call(self, hass: HomeAssistant, tool_input: ToolInput) -> ToolResult:
+        entity_id = tool_input.parameters.get("entity_id")
+        status = tool_input.parameters.get("status", ["needs_action"])
+
+        if not entity_id:
+            return ToolResult.of_fail(tool_input.identifier, {"error": "Missing required field: entity_id"})
+
+        try:
+            result = await hass.services.async_call(
+                "todo",
+                "get_items",
+                {
+                    "entity_id": entity_id,
+                    "status": status,
+                },
+                blocking=True,
+                return_response=True,
+            )
+
+            return ToolResult.of_success(tool_input.identifier, {"items": result})
+        except Exception as e:
+            return ToolResult.of_fail(tool_input.identifier, {"error": str(e)})
+
+
+_tools: list[dict] = [EntityStateTool().to_dict(), CallServiceTool().to_dict(), GetTodoItemsTool().to_dict()]
 TOOLS_CLASS: dict[str, type[Tool]] = {
     EntityStateTool.name: EntityStateTool,
-    CallServiceTool.name: CallServiceTool
+    CallServiceTool.name: CallServiceTool,
+    GetTodoItemsTool.name: GetTodoItemsTool,
 }
 
 PROMPT_TOOLS: str = (_tools_orientation
