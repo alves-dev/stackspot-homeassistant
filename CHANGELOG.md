@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [SemVer](https://semver.org).
 
 ---
+## [1.4.0-beta.2] - 2025-09-07
+
+### Added
+- Created new Tool `get_todo_items`
+- New parameter in agent configuration to indicate if it can control the ha:
+  - It basically indicates whether the agent has access or not to the Tools
+  - By default this option is `false`
+
+---
 ## [1.4.0-beta.1] - 2025-09-03
 
 ### Added
