@@ -9,6 +9,10 @@
 
 See all changes in [CHANGELOG.md](./CHANGELOG.md)
 
+## 📍 Roadmap
+
+See the planning in [PROJECT](https://github.com/users/alves-dev/projects/3)
+
 ### What is it
 This is an integration of [Home Assistant](https://www.home-assistant.io) to connect to the [Stackspot AI](https://stackspot.com/en) platform, 
 Which is a platform of AI, where you can easily create your custom agents with various different models.

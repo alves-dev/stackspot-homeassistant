@@ -6,13 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [SemVer](https://semver.org).
 
 ---
-## [1.4.0-beta.2] - 2025-09-07
+## [1.4.0-beta.2] - 2025-09-08
 
 ### Added
 - Created new Tool `get_todo_items`
 - New parameter in agent configuration to indicate if it can control the ha:
   - It basically indicates whether the agent has access or not to the Tools
   - By default this option is `false`
+- New `LLM Model` parameter:
+  - Informational only
+  - Appears on the device
+  - No effect on the agent
+
+### Improvements
+- New naming strategy for sub-entries
+- Improved device information
 
 ---
 ## [1.4.0-beta.1] - 2025-09-03
