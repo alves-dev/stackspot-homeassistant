@@ -15,7 +15,11 @@ from homeassistant.core import callback, HomeAssistant
 from homeassistant.helpers.selector import (
     NumberSelector,
     NumberSelectorConfig,
-    NumberSelectorMode, TemplateSelector, DurationSelector, DurationSelectorConfig
+    NumberSelectorMode,
+    TemplateSelector,
+    DurationSelector,
+    DurationSelectorConfig,
+    BooleanSelector,
 )
 
 from .const import (
@@ -34,10 +38,7 @@ from .const import (
     SUBENTRY_AI_TASK,
     CONF_AGENT_PROMPT,
     CONF_AGENT_PROMPT_DEFAULT,
-    CONF_AI_TASK_PROMPT,
     CONF_AI_TASK_PROMPT_DEFAULT,
-    CONF_AI_TASK_NAME,
-    CONF_AI_TASK_AGENT_ID,
     CONF_AI_TASK_NAME_DEFAULT,
     SUBENTRY_KS,
     CONF_KS_NAME,
@@ -47,6 +48,9 @@ from .const import (
     CONF_KS_INTERVAL_UPDATE_DEFAULT,
     CONF_KS_TEMPLATE,
     CONF_KS_TEMPLATE_DEFAULT,
+    CONF_AGENT_ALLOW_CONTROL,
+    CONF_AGENT_ALLOW_CONTROL_DEFAULT,
+    CONF_LLM_MODEL,
 )
 from .util import create_slug
 
@@ -155,6 +159,7 @@ class StackspotOptionsFlowHandler(OptionsFlow):
 def _get_schema_subentry_agent() -> vol.Schema:
     max_message = vol.Required(CONF_AGENT_MAX_MESSAGES_HISTORY, default=10)
     prompt = vol.Optional(CONF_AGENT_PROMPT, default=CONF_AGENT_PROMPT_DEFAULT)
+    allow_control = vol.Required(CONF_AGENT_ALLOW_CONTROL, default=CONF_AGENT_ALLOW_CONTROL_DEFAULT)
 
     return vol.Schema({
         vol.Required(CONF_AGENT_NAME, default=CONF_AGENT_NAME_DEFAULT): str,
@@ -162,17 +167,20 @@ def _get_schema_subentry_agent() -> vol.Schema:
         max_message: NumberSelector(
             NumberSelectorConfig(min=2, max=100, step=2, mode=NumberSelectorMode.SLIDER)
         ),
-        prompt: TemplateSelector()
+        allow_control: BooleanSelector(),
+        prompt: TemplateSelector(),
+        vol.Optional(CONF_LLM_MODEL): str,
     })
 
 
 def _get_schema_subentry_task() -> vol.Schema:
-    prompt = vol.Optional(CONF_AI_TASK_PROMPT, default=CONF_AI_TASK_PROMPT_DEFAULT)
+    prompt = vol.Optional(CONF_AGENT_PROMPT, default=CONF_AI_TASK_PROMPT_DEFAULT)
 
     return vol.Schema({
-        vol.Required(CONF_AI_TASK_NAME, default=CONF_AI_TASK_NAME_DEFAULT): str,
-        vol.Required(CONF_AI_TASK_AGENT_ID): str,
-        prompt: TemplateSelector()
+        vol.Required(CONF_AGENT_NAME, default=CONF_AI_TASK_NAME_DEFAULT): str,
+        vol.Required(CONF_AGENT_ID): str,
+        prompt: TemplateSelector(),
+        vol.Optional(CONF_LLM_MODEL): str,
     })
 
 
@@ -197,7 +205,7 @@ class AgentSubentryFlow(ConfigSubentryFlow):
     async def async_step_user(self, user_input=None):
         if user_input is not None:
             _LOGGER.debug("Subentry data: %s", user_input)
-            new_entry = self.async_create_entry(title=user_input[CONF_AGENT_ID], data=user_input)
+            new_entry = self.async_create_entry(title=user_input[CONF_AGENT_NAME], data=user_input)
             self.hass.async_create_task(async_configure_later(self.hass, self._entry_id))
             return new_entry
 
@@ -249,7 +257,7 @@ class AiTaskSubentryFlow(ConfigSubentryFlow):
     async def async_step_user(self, user_input=None):
         if user_input is not None:
             _LOGGER.debug("Subentry data: %s", user_input)
-            new_entry = self.async_create_entry(title=user_input[CONF_AGENT_ID], data=user_input)
+            new_entry = self.async_create_entry(title=user_input[CONF_AGENT_NAME], data=user_input)
             self.hass.async_create_task(async_configure_later(self.hass, self._entry_id))
             return new_entry
 
@@ -290,7 +298,7 @@ class AiTaskSubentryFlow(ConfigSubentryFlow):
             step_id="reconfigure",
             data_schema=data_schema,
             description_placeholders={
-                "agent_task_name": current_data.get(CONF_AI_TASK_NAME, "Task")
+                "agent_task_name": current_data.get(CONF_AGENT_NAME, "Task")
             }
         )
 

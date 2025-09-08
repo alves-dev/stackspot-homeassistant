@@ -14,7 +14,7 @@ from voluptuous_openapi import convert
 
 from custom_components.stackspot.agent import StackSpotAgent
 from custom_components.stackspot.const import SUBENTRY_AI_TASK
-from custom_components.stackspot.data_utils import StackSpotAgentConfig
+from custom_components.stackspot.data_utils import StackSpotAgentConfig, SensorConfig
 from custom_components.stackspot.util import get_device_info_agent
 
 _LOGGER = logging.getLogger(__name__)
@@ -28,12 +28,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry,
             continue
 
         agent_config = StackSpotAgentConfig.from_entry_for_task(entry, subentry)
-
-        subentry_id = subentry.subentry_id
-        agent_name = subentry.data.get('agent_name')
+        sensor_config = SensorConfig.from_subentry(subentry)
         stackspot_agent = StackSpotAgent(hass, agent_config)
 
-        task = StackSpotAiTaskEntity(subentry_id, agent_name, stackspot_agent)
+        task = StackSpotAiTaskEntity(sensor_config, stackspot_agent)
         async_add_entities([task], config_subentry_id=subentry.subentry_id)
 
 
@@ -47,12 +45,12 @@ class StackSpotAiTaskEntity(AITaskEntity):
         AITaskEntityFeature.GENERATE_DATA
     )
 
-    def __init__(self, config_id: str, agent_name: str, agent_instance: StackSpotAgent) -> None:
+    def __init__(self, config: SensorConfig, agent_instance: StackSpotAgent) -> None:
         """Inicializa a entidade de conversação."""
-        self._agent_name = agent_name
+        self._agent_name = config.agent_name
         self._agent_instance = agent_instance
-        self._attr_unique_id = f'stackspot_task_{config_id}'
-        self._attr_device_info = get_device_info_agent(config_id, agent_name)
+        self._attr_unique_id = f'stackspot_task_{config.config_id}'
+        self._attr_device_info = get_device_info_agent(config)
 
     async def _async_generate_data(self, task: GenDataTask, chat_log: ChatLog) -> GenDataTaskResult:
         """Handle a generate data task."""

@@ -19,13 +19,16 @@ from custom_components.stackspot.const import (
     CONF_KS_SLUG,
     CONF_KS_TEMPLATE,
     CONF_KS_TEMPLATE_DEFAULT,
+    CONF_AGENT_ALLOW_CONTROL,
+    CONF_AGENT_ALLOW_CONTROL_DEFAULT,
+    CONF_LLM_MODEL,
 )
 
 
 class MessageRole(StrEnum):
     """Role of a chat message."""
 
-    #SYSTEM = "system"  # prompt
+    # SYSTEM = "system"  # prompt
     USER = "user"
     ASSISTANT = "assistant"
     TOOL = "tool"
@@ -76,6 +79,8 @@ class StackSpotAgentConfig:
     client_key: str
     max_messages_history: int
     prompt: str
+    allow_control: bool
+    llm_model: str
 
     @classmethod
     def from_entry(cls, entry: ConfigEntry, subentry: ConfigSubentry) -> "StackSpotAgentConfig":
@@ -88,7 +93,9 @@ class StackSpotAgentConfig:
             client_id=entry.data[CONF_CLIENT_ID],
             client_key=entry.data[CONF_CLIENT_KEY],
             max_messages_history=int(subentry.data.get(CONF_AGENT_MAX_MESSAGES_HISTORY, 10)),
-            prompt=subentry.data.get(CONF_AGENT_PROMPT, CONF_AGENT_PROMPT_DEFAULT)
+            prompt=subentry.data.get(CONF_AGENT_PROMPT, CONF_AGENT_PROMPT_DEFAULT),
+            allow_control=subentry.data.get(CONF_AGENT_ALLOW_CONTROL, CONF_AGENT_ALLOW_CONTROL_DEFAULT),
+            llm_model=subentry.data.get(CONF_LLM_MODEL, ''),
         )
 
     @classmethod
@@ -102,7 +109,9 @@ class StackSpotAgentConfig:
             client_id=entry.data[CONF_CLIENT_ID],
             client_key=entry.data[CONF_CLIENT_KEY],
             max_messages_history=0,
-            prompt=subentry.data.get(CONF_AGENT_PROMPT, CONF_AGENT_PROMPT_DEFAULT)
+            prompt=subentry.data.get(CONF_AGENT_PROMPT, CONF_AGENT_PROMPT_DEFAULT),
+            allow_control=False,
+            llm_model=subentry.data.get(CONF_LLM_MODEL, ''),
         )
 
 
@@ -136,4 +145,31 @@ class KSData:
             name=subentry.data.get(CONF_KS_NAME, STATE_UNKNOWN),
             slug=subentry.data.get(CONF_KS_SLUG, STATE_UNKNOWN),
             template=subentry.data.get(CONF_KS_TEMPLATE, CONF_KS_TEMPLATE_DEFAULT),
+        )
+
+
+@dataclass(frozen=True)
+class SensorConfig:
+    """Dataclass for created a sensor"""
+    config_id: str
+    agent_name: str | None
+    agent_id: str | None
+    llm_model: str | None
+
+    @classmethod
+    def from_subentry(cls, subentry: ConfigSubentry) -> "SensorConfig":
+        return cls(
+            config_id=subentry.subentry_id,
+            agent_name=subentry.data[CONF_AGENT_NAME],
+            agent_id=subentry.data[CONF_AGENT_ID],
+            llm_model=subentry.data.get(CONF_LLM_MODEL, ''),
+        )
+
+    @classmethod
+    def from_entry_id(cls, entry_id: str) -> "SensorConfig":
+        return cls(
+            config_id=entry_id,
+            agent_name=None,
+            agent_id=None,
+            llm_model=None,
         )

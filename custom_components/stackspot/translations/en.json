@@ -24,7 +24,7 @@
         "user": "Add agent",
         "reconfigure": "Reconfigure Agent"
       },
-      "entry_type": "StackSpot Agent",
+      "entry_type": "Agent",
       "step": {
         "user": {
           "title": "StackSpot - New agent",
@@ -33,11 +33,15 @@
             "agent_name": "Agent name",
             "agent_id": "Agent ID",
             "max_messages_history": "Maximum number of messages in the history",
-            "agent_prompt": "Prompt"
+            "allow_control": "Allow control",
+            "agent_prompt": "Prompt",
+            "llm_model": "LLM Model"
           },
           "data_description": {
             "max_messages_history": "Defines how many recent messages will be kept in the history for each section",
-            "agent_prompt": "This prompt is rendered by `template`, so you can use variables. He is sending each interaction with the stackspot agent"
+            "allow_control": "Allow the agent to control their entities, this allowed access to the Tools by the agent",
+            "agent_prompt": "This prompt is rendered by `template`, so you can use variables. He is sending each interaction with the stackspot agent",
+            "llm_model": "LLM model of the agent. This has no effect except for display on the created device"
           }
         },
         "reconfigure": {
@@ -47,11 +51,15 @@
             "agent_name": "Agent name",
             "agent_id": "Agent ID",
             "max_messages_history": "Maximum number of messages in the history",
-            "agent_prompt": "Prompt"
+            "allow_control": "Allow control",
+            "agent_prompt": "Prompt",
+            "llm_model": "LLM Model"
           },
           "data_description": {
             "max_messages_history": "Defines how many recent messages will be kept in the history for each section",
-            "agent_prompt": "This prompt is rendered by `template`, so you can use variables. He is sending each interaction with the stackspot agent"
+            "allow_control": "Allow the agent to control their entities, this allowed access to the Tools by the agent",
+            "agent_prompt": "This prompt is rendered by `template`, so you can use variables. He is sending each interaction with the stackspot agent",
+            "llm_model": "LLM model of the agent. This has no effect except for display on the created device"
           }
         }
       },
@@ -64,7 +72,7 @@
         "user": "Add AI task",
         "reconfigure": "Reconfigure AI task"
       },
-      "entry_type": "StackSpot Agent for AI tasks",
+      "entry_type": "AI tasks",
       "step": {
         "user": {
           "title": "StackSpot - New AI task",
@@ -72,10 +80,12 @@
           "data": {
             "agent_name": "Agent task name",
             "agent_id": "Agent ID",
-            "agent_prompt": "Prompt for task"
+            "agent_prompt": "Prompt for task",
+            "llm_model": "LLM Model"
           },
           "data_description": {
-            "agent_prompt": "This prompt is rendered by `template`, so you can use variables"
+            "agent_prompt": "This prompt is rendered by `template`, so you can use variables",
+            "llm_model": "LLM model of the agent. This has no effect except for display on the created device"
           }
         },
         "reconfigure": {
@@ -84,10 +94,12 @@
           "data": {
             "agent_name": "Agent task name",
             "agent_id": "Agent ID",
-            "agent_prompt": "Prompt"
+            "agent_prompt": "Prompt",
+            "llm_model": "LLM Model"
           },
           "data_description": {
-            "agent_prompt": "This prompt is rendered by `template`, so you can use variables"
+            "agent_prompt": "This prompt is rendered by `template`, so you can use variables",
+            "llm_model": "LLM model of the agent. This has no effect except for display on the created device"
           }
         }
       },
@@ -100,7 +112,7 @@
         "user": "Create KS",
         "reconfigure": "Reconfigure KS"
       },
-      "entry_type": "StackSpot Knowledge Source",
+      "entry_type": "KS",
       "step": {
         "user": {
           "title": "StackSpot - New Knowledge Source",

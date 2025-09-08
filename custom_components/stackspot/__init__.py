@@ -9,7 +9,6 @@ from homeassistant.helpers.event import async_track_time_interval
 from .const import (
     DOMAIN,
     MANAGER,
-    AGENTS_KEY,
     CONF_AGENT_NAME,
     CONF_AGENT_NAME_DEFAULT,
     CONF_KS_INTERVAL_UPDATE,
