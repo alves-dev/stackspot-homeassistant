@@ -4,6 +4,7 @@ from homeassistant.components.sensor import SensorEntity
 from homeassistant.const import STATE_UNKNOWN
 from homeassistant.helpers.restore_state import RestoreEntity
 
+from ..data_utils import SensorConfig
 from ..util import get_device_info_agent
 
 _LOGGER = logging.getLogger(__name__)
@@ -14,10 +15,10 @@ class TokenSensor(SensorEntity, RestoreEntity):
     _attr_native_unit_of_measurement = "tokens"
     _attr_icon = "mdi:counter"
 
-    def __init__(self, entry_id: str, agent_name: str):
-        self._agent_name = agent_name
+    def __init__(self, config: SensorConfig):
+        self._agent_name = config.agent_name
         self._attr_native_value = 0
-        self._attr_device_info = get_device_info_agent(entry_id, agent_name)
+        self._attr_device_info = get_device_info_agent(config)
 
     async def async_added_to_hass(self) -> None:
         """This method is called by the Home Assistant when the entity is added"""

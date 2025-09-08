@@ -22,6 +22,7 @@ from .const import (
     SUBENTRY_KS,
     CONF_KS_SLUG, CONF_KS_NAME, SENSOR_KS_LAST_UPDATE,
 )
+from .data_utils import SensorConfig
 from .entities.token_sensor import TokenSensor
 from .util import get_device_general, get_device_info_ks
 
@@ -39,12 +40,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry,
             continue
 
         subentry_id = subentry.subentry_id
-        agent_name = subentry.data.get('agent_name')
+        sensor_config = SensorConfig.from_subentry(subentry)
 
-        total_sensor = TokenTotalSensor(subentry_id, agent_name)
-        user_sensor = TokenUserSensor(subentry_id, agent_name)
-        enrichment_sensor = TokenEnrichmentSensor(subentry_id, agent_name)
-        output_sensor = TokenOutputSensor(subentry_id, agent_name)
+        total_sensor = TokenTotalSensor(sensor_config)
+        user_sensor = TokenUserSensor(sensor_config)
+        enrichment_sensor = TokenEnrichmentSensor(sensor_config)
+        output_sensor = TokenOutputSensor(sensor_config)
 
         sensors = [total_sensor, user_sensor, enrichment_sensor, output_sensor]
         async_add_entities(sensors, True, config_subentry_id=subentry_id)
@@ -76,7 +77,7 @@ class TokenGeneralTotalSensor(TokenSensor):
     _attr_name = "Tokens Total General"
 
     def __init__(self, config_id: str):
-        super().__init__(config_id, None)
+        super().__init__(SensorConfig.from_entry_id(config_id))
         self._attr_device_info = get_device_general(config_id)
         self._attr_unique_id = f'stackspot_global_total_general_tokens_{config_id}'
 
@@ -84,33 +85,33 @@ class TokenGeneralTotalSensor(TokenSensor):
 class TokenTotalSensor(TokenSensor):
     _attr_name = "Total Tokens Count"
 
-    def __init__(self, entry_id: str, agent_name: str):
-        super().__init__(entry_id, agent_name)
-        self._attr_unique_id = f"stackspot_token_total_count_{entry_id}"
+    def __init__(self, config: SensorConfig):
+        super().__init__(config)
+        self._attr_unique_id = f"stackspot_token_total_count_{config.config_id}"
 
 
 class TokenUserSensor(TokenSensor):
     _attr_name = "User Tokens Count"
 
-    def __init__(self, entry_id: str, agent_name: str):
-        super().__init__(entry_id, agent_name)
-        self._attr_unique_id = f"stackspot_token_user_count_{entry_id}"
+    def __init__(self, config: SensorConfig):
+        super().__init__(config)
+        self._attr_unique_id = f"stackspot_token_user_count_{config.config_id}"
 
 
 class TokenEnrichmentSensor(TokenSensor):
     _attr_name = "Enrichment Tokens Count"
 
-    def __init__(self, entry_id: str, agent_name: str):
-        super().__init__(entry_id, agent_name)
-        self._attr_unique_id = f"stackspot_token_enrichment_count_{entry_id}"
+    def __init__(self, config: SensorConfig):
+        super().__init__(config)
+        self._attr_unique_id = f"stackspot_token_enrichment_count_{config.config_id}"
 
 
 class TokenOutputSensor(TokenSensor):
     _attr_name = "Output Tokens Count"
 
-    def __init__(self, entry_id: str, agent_name: str):
-        super().__init__(entry_id, agent_name)
-        self._attr_unique_id = f"stackspot_token_output_count_{entry_id}"
+    def __init__(self, config: SensorConfig):
+        super().__init__(config)
+        self._attr_unique_id = f"stackspot_token_output_count_{config.config_id}"
 
 
 class KSDateTimeSensor(SensorEntity, RestoreEntity):

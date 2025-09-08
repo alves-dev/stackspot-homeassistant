@@ -24,7 +24,7 @@
         "user": "Adicionar agente",
         "reconfigure": "Reconfigurar agente"
       },
-      "entry_type": "Agente da StackSpot",
+      "entry_type": "Agent",
       "step": {
         "user": {
           "title": "StackSpot - Novo agente",
@@ -34,12 +34,14 @@
             "agent_id": "Agente ID",
             "max_messages_history": "Número máximo de mensagens no histórico",
             "allow_control": "Permitir controle",
-            "agent_prompt": "Prompt"
+            "agent_prompt": "Prompt",
+            "llm_model": "Modelo LLM"
           },
           "data_description": {
             "max_messages_history": "Define quantas mensagens recentes serão mantidas no histórico para cada seção",
             "allow_control": "Permitir que o agente possa controlar suas entidades, isso permiti acesso as tools por parte do agente",
-            "agent_prompt": "Este prompt é renderizado pela `template`, então você pode usar variáveis. Ele é enviado a cada interação com o agente ds StackSpot"
+            "agent_prompt": "Este prompt é renderizado pela `template`, então você pode usar variáveis. Ele é enviado a cada interação com o agente ds StackSpot",
+            "llm_model": "Modelo LLM do agente. Isso não tem nenhum efeito a não ser para exibição no device criado"
           }
         },
         "reconfigure": {
@@ -50,12 +52,14 @@
             "agent_id": "Agente ID",
             "max_messages_history": "Número máximo de mensagens no histórico",
             "allow_control": "Permitir controle",
-            "agent_prompt": "Prompt"
+            "agent_prompt": "Prompt",
+            "llm_model": "Modelo LLM"
           },
           "data_description": {
             "max_messages_history": "Define quantas mensagens recentes serão mantidas no histórico para cada seção",
             "allow_control": "Permitir que o agente possa controlar suas entidades, isso permiti acesso as tools por parte do agente",
-            "agent_prompt": "Este prompt é renderizado pela `template`, então você pode usar variáveis. Ele é enviado a cada interação com o agente ds StackSpot"
+            "agent_prompt": "Este prompt é renderizado pela `template`, então você pode usar variáveis. Ele é enviado a cada interação com o agente ds StackSpot",
+            "llm_model": "Modelo LLM do agente. Isso não tem nenhum efeito a não ser para exibição no device criado"
           }
         }
       },
@@ -68,7 +72,7 @@
         "user": "Adicionar agente para tarefas de IA",
         "reconfigure": "Reconfigurar agente de tarefas"
       },
-      "entry_type": "Agente da StackSpot para tarefas de IA",
+      "entry_type": "AI tasks",
       "step": {
         "user": {
           "title": "StackSpot - Nova tarefa de IA",
@@ -76,10 +80,12 @@
           "data": {
             "agent_name": "Nome do agente de tarefa",
             "agent_id": "Agente ID",
-            "agent_prompt": "Prompt para a tarefa"
+            "agent_prompt": "Prompt para a tarefa",
+            "llm_model": "Modelo LLM"
           },
           "data_description": {
-            "agent_prompt": "Este prompt é renderizado pela `template`, então você pode usar variáveis"
+            "agent_prompt": "Este prompt é renderizado pela `template`, então você pode usar variáveis",
+            "llm_model": "Modelo LLM do agente. Isso não tem nenhum efeito a não ser para exibição no device criado"
           }
         },
         "reconfigure": {
@@ -88,10 +94,12 @@
           "data": {
             "agent_name": "Nome do agente de tarefa",
             "agent_id": "Agente ID",
-            "agent_prompt": "Prompt para a tarefa"
+            "agent_prompt": "Prompt para a tarefa",
+            "llm_model": "Modelo LLM"
           },
           "data_description": {
-            "agent_prompt": "Este prompt é renderizado pela `template`, então você pode usar variáveis"
+            "agent_prompt": "Este prompt é renderizado pela `template`, então você pode usar variáveis",
+            "llm_model": "Modelo LLM do agente. Isso não tem nenhum efeito a não ser para exibição no device criado"
           }
         }
       },
@@ -104,7 +112,7 @@
         "user": "Adicionar KS",
         "reconfigure": "Reconfigurar KS"
       },
-      "entry_type": "Knowledge Source StackSpot",
+      "entry_type": "KS",
       "step": {
         "user": {
           "title": "StackSpot - Novo Knowledge Source",

@@ -13,17 +13,21 @@ from homeassistant.helpers.template import Template
 
 from . import StackSpotEntityManager
 from .const import DOMAIN, INTEGRATION_NAME, MANAGER, TEMPLATE_KEY_EXPOSED_ENTITIES
+from .data_utils import SensorConfig
 
 _LOGGER = logging.getLogger(__name__)
 
 
-def get_device_info_agent(entry_id: str, name: str) -> DeviceInfo:
-    device_identifier = f'stackspot_agent_device_{entry_id}'
+def get_device_info_agent(config: SensorConfig) -> DeviceInfo:
+    device_identifier = f'stackspot_agent_device_{config.config_id}'
     return DeviceInfo(
         identifiers={(DOMAIN, device_identifier)},
-        name=name,
+        entry_type=DeviceEntryType.SERVICE,
         manufacturer=INTEGRATION_NAME,
-        entry_type=DeviceEntryType.SERVICE
+        name=config.agent_name,
+        model=config.llm_model,
+        serial_number=config.agent_id,
+        configuration_url=f'https://ai.stackspot.com/agents/create?id={config.agent_id}',
     )
 
 
@@ -31,9 +35,9 @@ def get_device_general(entry_id: str) -> DeviceInfo:
     device_identifier = f'stackspot_general_device_{entry_id}'
     return DeviceInfo(
         identifiers={(DOMAIN, device_identifier)},
-        name='Config',
+        entry_type=DeviceEntryType.SERVICE,
         manufacturer=INTEGRATION_NAME,
-        entry_type=DeviceEntryType.SERVICE
+        name='Config',
     )
 
 
@@ -41,12 +45,12 @@ def get_device_info_ks(entry_id: str, slug: str, name: str) -> DeviceInfo:
     device_identifier = f'stackspot_ks_device_{entry_id}'
     return DeviceInfo(
         identifiers={(DOMAIN, device_identifier)},
-        name=name,
+        entry_type=DeviceEntryType.SERVICE,
         manufacturer=INTEGRATION_NAME,
+        name=name,
         model="custom",
         serial_number=slug,
         configuration_url=f'https://ai.stackspot.com/knowledge-sources/{slug}?tabIndex=1',
-        entry_type=DeviceEntryType.SERVICE
     )
 
 
