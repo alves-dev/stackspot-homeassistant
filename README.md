@@ -25,7 +25,7 @@ Just have an account on the Stackspot platform: [Create Freemium Account](https:
 - Conversation
 - AI task - Requires HA `2025.8+`
 - KS: More context with Knowledge Sources by StackSpot - Requires integration `1.3.0+`
-- `in beta` Tools: Powers to change status and call for services - Requires integration `1.4.0-beta.1+`
+- Tools: Powers to change status and call for services - Requires integration `1.4.0+`
 
 #### Conversation
 Allows you to create multiple agents for the same account and have a control over the use of tokens.
@@ -53,7 +53,7 @@ When clicking on `Visit` you will be sent to the StackSpot page with the open KS
 
 To learn more: [knowledge-source](https://ai.stackspot.com/docs/knowledge-source/ks)
 
-#### Tools `in beta`
+#### Tools
 
 **⚠️ Note that this gives the agent access to change states in your HA. 
 Consider that LLMs are not deterministic and may call services and/or change statuses that they shouldn't. 
@@ -61,10 +61,11 @@ Use at your own risk.**
 
 **Recommendation:** Use the `ks` or the variable` expose` to give the context of your agent the exposed entities and their aliases.
 
-**Two tools are being made available:** 
-- The agent can decide when and which one to call, making it possible to call several at the same time.
- - `get_entity_state`
- - `call_service`
+**Some tools are being made available:** 
+  - `get_entity_state`
+  - `get_todo_items`
+  - `call_service`
+  - The agent can decide when and which one to call, making it possible to call several at the same time.
 
 
 ### Installation
@@ -163,4 +164,4 @@ logger:
 
 ### Limitations
 
-From the `1.3.0` version the agent may be aware of his entities in some way, being through KS or Prompts, but is not yet able to change the status of the entities.
+Starting with version `1.4.0`, the agent can be aware of its entities in some way, either through KS or Prompts, and when enabled in the agent configuration, it can now make changes by calling the available functions.
