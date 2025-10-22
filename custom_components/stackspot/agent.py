@@ -127,11 +127,13 @@ class StackSpotAgent:
 
     async def _actions_with_response(self, response: dict) -> None:
         if "tokens" in response and isinstance(response["tokens"], dict):
-            user_tokens = response["tokens"].get("user", 0)
-            enrichment_tokens = response["tokens"].get("enrichment", 0)
-            output_tokens = response["tokens"].get("output", 0)
+            # TODO: Verificar quando o pessoal atualizar a documentação
+            user_tokens = response["tokens"].get("user") or 0
+            input_token = response["tokens"].get("input") or 0
+            enrichment_tokens = response["tokens"].get("enrichment") or 0
+            output_tokens = response["tokens"].get("output") or 0
 
-            await self._update_token_sensors(user_tokens, enrichment_tokens, output_tokens)
+            await self._update_token_sensors(user_tokens + input_token, enrichment_tokens, output_tokens)
         else:
             _LOGGER.debug("Resposta da StackSpot AI sem dados de tokens.")
 
