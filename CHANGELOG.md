@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [SemVer](https://semver.org).
 
 ---
+## [1.5.0] - 2025-10-22
+
+### Fix
+- There was a change in the StackSpot API response that caused the token count to break
+  - **NOTE**: I was contacted and informed that the fields are under review and that after that the documentation will be updated. 
+
+---
 ## [1.4.0] - 2025-09-17
 
 This version includes everything that was released in the beta versions below without any changes.
