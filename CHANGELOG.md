@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [SemVer](https://semver.org).
 
 ---
+## [1.6.0] - 2025-12-01
+
+### Fix
+- Fix for compatibility with version `2025.11`. 
+
+---
 ## [1.5.0] - 2025-10-22
 
 ### Fix

@@ -24,7 +24,7 @@ CONF_AGENT_MAX_MESSAGES_HISTORY = "max_messages_history"
 CONF_AGENT_ALLOW_CONTROL = 'allow_control'
 CONF_AGENT_ALLOW_CONTROL_DEFAULT = False
 CONF_AGENT_PROMPT_DEFAULT = (
-        llm.BASE_PROMPT
+        llm.DATE_TIME_PROMPT
         + '\n'
         + llm.DEFAULT_INSTRUCTIONS_PROMPT
         + '\n'
@@ -36,7 +36,7 @@ CONF_AGENT_PROMPT_DEFAULT = (
 # CONF AI TASK
 CONF_AI_TASK_NAME_DEFAULT = 'StackSpot AI task'
 CONF_AI_TASK_PROMPT_DEFAULT = (
-        llm.BASE_PROMPT
+        llm.DATE_TIME_PROMPT
         + '\n'
         + llm.DEFAULT_INSTRUCTIONS_PROMPT
 )
