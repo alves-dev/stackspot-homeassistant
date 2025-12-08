@@ -12,8 +12,17 @@ from homeassistant.helpers.device_registry import DeviceInfo, DeviceEntryType
 from homeassistant.helpers.template import Template
 
 from . import StackSpotEntityManager
-from .const import DOMAIN, INTEGRATION_NAME, MANAGER, TEMPLATE_KEY_EXPOSED_ENTITIES
+from .const import (
+    DOMAIN,
+    INTEGRATION_NAME,
+    MANAGER,
+    TEMPLATE_KEY_EXPOSED_ENTITIES,
+    TEMPLATE_KEY_TOOLS,
+    TEMPLATE_KEY_TOOLS_PROMPT,
+    TEMPLATE_KEY_ALL_VARIABLES
+)
 from .data_utils import SensorConfig
+from .tools import PROMPT_TOOLS, _tools
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -55,8 +64,16 @@ def get_device_info_ks(entry_id: str, slug: str, name: str) -> DeviceInfo:
 
 
 async def render_template(hass: HomeAssistant, template_str: str, variables: dict = None) -> Any:
+    all_variables = variables | get_variables(hass)
+
     tpl = Template(template_str, hass)
-    return tpl.async_render(variables or {})
+    result = tpl.async_render(all_variables, parse_result=False)
+
+    # Decodifica escapes Unicode e caracteres especiais (em outras palavrs: quebra as linhas)
+    if isinstance(result, str):
+        result = result.encode().decode('unicode_escape')
+
+    return result
 
 
 async def get_list_exposed_entities(hass: HomeAssistant) -> list[dict]:
@@ -110,3 +127,24 @@ async def get_username_by_conversation_input(hass: HomeAssistant, conversation: 
     if user:
         return user.name
     return STATE_UNKNOWN
+
+
+async def init_variables(hass: HomeAssistant):
+    manager: StackSpotEntityManager = hass.data[DOMAIN][MANAGER]
+
+    manager.add_objetc(TEMPLATE_KEY_TOOLS, _tools)
+    manager.add_objetc(TEMPLATE_KEY_TOOLS_PROMPT, PROMPT_TOOLS)
+
+
+def get_variables(hass: HomeAssistant) -> dict:
+    manager: StackSpotEntityManager = hass.data[DOMAIN][MANAGER]
+
+    variables = {
+        TEMPLATE_KEY_EXPOSED_ENTITIES: manager.get_object_by(TEMPLATE_KEY_EXPOSED_ENTITIES),
+        TEMPLATE_KEY_TOOLS: manager.get_object_by(TEMPLATE_KEY_TOOLS),
+        TEMPLATE_KEY_TOOLS_PROMPT: manager.get_object_by(TEMPLATE_KEY_TOOLS_PROMPT),
+    }
+
+    variables[TEMPLATE_KEY_ALL_VARIABLES] = variables.copy()
+
+    return variables

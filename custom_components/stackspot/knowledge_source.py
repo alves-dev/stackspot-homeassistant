@@ -4,7 +4,7 @@ from homeassistant.core import HomeAssistant
 
 from . import StackSpotEntityManager, MANAGER
 from .client.stackspot_client import StackSpotApiClient
-from .const import TEMPLATE_KEY_EXPOSED_ENTITIES, DOMAIN, SENSOR_KS_LAST_UPDATE
+from .const import DOMAIN, SENSOR_KS_LAST_UPDATE
 from .data_utils import StackSpotLogin, KSData
 from .sensor import KSDateTimeSensor
 from .util import render_template
@@ -28,11 +28,8 @@ async def ks_update(hass: HomeAssistant, data_token: StackSpotLogin, data: KSDat
     await api.clear_objects_knowledge_sources(access_token, data.slug)
 
     manager: StackSpotEntityManager = hass.data[DOMAIN][MANAGER]
-    variables = {
-        TEMPLATE_KEY_EXPOSED_ENTITIES: manager.get_object_by(TEMPLATE_KEY_EXPOSED_ENTITIES)
-    }
-    content: str = await render_template(hass, data.template, variables)
 
+    content: str = await render_template(hass, data.template, {})
     response = await api.add_content_knowledge_sources(access_token, data.slug, str(content))
 
     if response is None or not response.get('error', False):

@@ -14,12 +14,13 @@ from .const import (
     CONF_KS_INTERVAL_UPDATE,
     CONF_KS_INTERVAL_UPDATE_DEFAULT,
     SUBENTRY_KS,
+    TEMPLATE_KEY_TOOLS,
 )
 from .data_utils import StackSpotLogin, KSData
 from .entities.stackspot_entity_manager import StackSpotEntityManager
 from .knowledge_source import ks_create, ks_update
 from .sensor import TokenTotalSensor
-from .util import get_list_exposed_entities
+from .util import get_list_exposed_entities, init_variables
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -33,6 +34,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     if MANAGER not in hass.data[DOMAIN]:
         hass.data[DOMAIN][MANAGER] = StackSpotEntityManager()
+
+    await init_variables(hass)
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     await process_exposed_entities(hass)

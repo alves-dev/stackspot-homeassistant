@@ -84,3 +84,6 @@ SUBENTRY_KS = 'knowledge_source'
 # Template Key
 TEMPLATE_KEY_USER = 'user'
 TEMPLATE_KEY_EXPOSED_ENTITIES = 'exposed_entities'
+TEMPLATE_KEY_TOOLS = 'tools'
+TEMPLATE_KEY_TOOLS_PROMPT = 'tools_prompt'
+TEMPLATE_KEY_ALL_VARIABLES = 'all_variables'
