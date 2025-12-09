@@ -13,6 +13,10 @@ See all changes in [CHANGELOG.md](./CHANGELOG.md)
 
 See the planning in [PROJECT](https://github.com/users/alves-dev/projects/3)
 
+## Compatibility Matrix
+
+See the [Compatibility Matrix](.docs/compatibility.md)
+
 ### What is it
 This is an integration of [Home Assistant](https://www.home-assistant.io) to connect to the [Stackspot AI](https://stackspot.com/en) platform, 
 Which is a platform of AI, where you can easily create your custom agents with various different models.
@@ -87,18 +91,7 @@ After adding and installing the integration, set up with:
   - The correct ID is the one in the URL, see this comment to help you get the correct ID: [issues 5 comment](https://github.com/alves-dev/stackspot-homeassistant/issues/5#issuecomment-3219962172)
 - `Maximum number of messages in the history`: Defines how many recent messages will be kept in the history for each section
 - `Prompt`: A template that becomes an additional prompt for the agent. Note that the variable `user` is provided by integration.
-  - List of provided variables available:
-    - `user` - Logged user name (This only works when the assist is called via chat in the UI)
-    - `exposed_entities` - A list of entities exposed with their alias, [see](https://www.home-assistant.io/voice_control/voice_remote_expose_devices/)
-      - Is created at the HA start and updated every 5 minutes.
-      - The object looks like this:
-      ```json
-      [{
-      "entity_id": "input_boolean.tv_room", 
-      "name": "TV room", 
-      "aliases": ["tv", "alias 2"]
-      }]
-      ```
+  - List of provided variables available: [variables.md](.docs/variables.md)
 
 You can have multiple agents, see:
 

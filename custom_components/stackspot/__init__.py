@@ -20,7 +20,7 @@ from .data_utils import StackSpotLogin, KSData
 from .entities.stackspot_entity_manager import StackSpotEntityManager
 from .knowledge_source import ks_create, ks_update
 from .sensor import TokenTotalSensor
-from .util import get_list_exposed_entities, init_variables
+from .util import load_exposed_entities, load_init_variables, load_scripts_from_yaml, load_services
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -35,10 +35,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if MANAGER not in hass.data[DOMAIN]:
         hass.data[DOMAIN][MANAGER] = StackSpotEntityManager()
 
-    await init_variables(hass)
-
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-    await process_exposed_entities(hass)
+    await process_variables(hass)
 
     for subentry in entry.subentries.values():
         if subentry.subentry_type == SUBENTRY_KS:
@@ -53,17 +51,23 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return unload_ok
 
 
-async def process_exposed_entities(hass: HomeAssistant) -> None:
+async def process_variables(hass: HomeAssistant) -> None:
+    await load_init_variables(hass)
+    await load_exposed_entities(hass)
+    await load_services(hass)
+    await load_scripts_from_yaml(hass)
+
     manager: StackSpotEntityManager = hass.data[DOMAIN][MANAGER]
-    key = 'exposed-entities-task'
+    key = 'variables-task'
 
     remove_listener = manager.get_object_by(key)
     if remove_listener is not None:
         remove_listener()
 
-    await get_list_exposed_entities(hass)
     async def task(now: datetime) -> None:
-        await get_list_exposed_entities(hass)
+        await load_exposed_entities(hass)
+        await load_services(hass)
+        await load_scripts_from_yaml(hass)
 
     remove_listener = async_track_time_interval(hass, task, timedelta(minutes=5))
     manager.add_objetc(key, remove_listener)

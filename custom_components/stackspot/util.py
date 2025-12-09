@@ -1,8 +1,10 @@
 import logging
 import re
 import unicodedata
+from pathlib import Path
 from typing import Any
 
+import yaml
 from homeassistant.auth.models import User
 from homeassistant.components.conversation import ConversationInput
 from homeassistant.const import STATE_UNKNOWN
@@ -19,7 +21,9 @@ from .const import (
     TEMPLATE_KEY_EXPOSED_ENTITIES,
     TEMPLATE_KEY_TOOLS,
     TEMPLATE_KEY_TOOLS_PROMPT,
-    TEMPLATE_KEY_ALL_VARIABLES
+    TEMPLATE_KEY_ALL_VARIABLES,
+    TEMPLATE_KEY_SERVICES,
+    TEMPLATE_KEY_SCRIPTS,
 )
 from .data_utils import SensorConfig
 from .tools import PROMPT_TOOLS, _tools
@@ -76,7 +80,7 @@ async def render_template(hass: HomeAssistant, template_str: str, variables: dic
     return result
 
 
-async def get_list_exposed_entities(hass: HomeAssistant) -> list[dict]:
+async def load_exposed_entities(hass: HomeAssistant):
     registry = entity_registry.async_get(hass)
 
     exposed_entities = []
@@ -89,14 +93,74 @@ async def get_list_exposed_entities(hass: HomeAssistant) -> list[dict]:
         list_dict.append({
             'entity_id': entity.entity_id,
             'name': entity.as_partial_dict.get('original_name', ''),
-            'aliases': list(entity.aliases)
+            'aliases': list(entity.aliases),
+            'labels': entity.as_partial_dict.get('labels', [])
         })
 
     manager: StackSpotEntityManager = hass.data[DOMAIN][MANAGER]
     manager.add_objetc(TEMPLATE_KEY_EXPOSED_ENTITIES, list_dict)
     _LOGGER.info('Expose entities in manager updated!')
 
-    return list_dict
+
+async def load_scripts_from_yaml(hass: HomeAssistant):
+    """Lê scripts diretamente do arquivo scripts.yaml."""
+
+    scripts_list = []
+
+    try:
+        config_path = Path(hass.config.config_dir)
+        scripts_file = config_path / "scripts.yaml"
+
+        if not scripts_file.exists():
+            _LOGGER.warning(f"File scripts.yaml not found in {scripts_file}")
+            return scripts_list
+
+        with open(scripts_file, 'r', encoding='utf-8') as file:
+            scripts_data = yaml.safe_load(file) or {}
+
+        registry = entity_registry.async_get(hass)
+
+        for script_id, script_config in scripts_data.items():
+            entity_id = f"script.{script_id}"
+
+            script_dict = {
+                'entity_id': entity_id,
+                'name': script_config.get('alias', script_id),
+                'description': script_config.get('description', ''),
+                'fields': script_config.get('fields', {}),
+            }
+
+            entry = registry.entities.get(entity_id)
+            script_dict['aliases'] = list(entry.aliases)
+            script_dict['labels'] = entry.as_partial_dict.get('labels', [])
+
+            scripts_list.append(script_dict)
+
+        manager: StackSpotEntityManager = hass.data[DOMAIN][MANAGER]
+        manager.add_objetc(TEMPLATE_KEY_SCRIPTS, scripts_list)
+        _LOGGER.info(f'Scripts from YAML loaded! Found {len(scripts_list)} scripts.')
+
+    except Exception as e:
+        _LOGGER.error(f"Erro ao ler scripts.yaml: {e}")
+
+
+async def load_services(hass: HomeAssistant):
+    services_list = []
+
+    for domain, services in hass.services.async_services().items():
+        for service_name, service_info in services.items():
+            service_dict = {
+                "domain": domain,
+                "service": service_name,
+                "name": f"{domain}.{service_name}"
+            }
+
+            if domain != "script":
+                services_list.append(service_dict)
+
+    manager: StackSpotEntityManager = hass.data[DOMAIN][MANAGER]
+    manager.add_objetc(TEMPLATE_KEY_SERVICES, services_list)
+    _LOGGER.info('Services and scripts in manager updated!')
 
 
 def create_slug(text: str) -> str:
@@ -129,7 +193,7 @@ async def get_username_by_conversation_input(hass: HomeAssistant, conversation: 
     return STATE_UNKNOWN
 
 
-async def init_variables(hass: HomeAssistant):
+async def load_init_variables(hass: HomeAssistant):
     manager: StackSpotEntityManager = hass.data[DOMAIN][MANAGER]
 
     manager.add_objetc(TEMPLATE_KEY_TOOLS, _tools)
@@ -143,6 +207,8 @@ def get_variables(hass: HomeAssistant) -> dict:
         TEMPLATE_KEY_EXPOSED_ENTITIES: manager.get_object_by(TEMPLATE_KEY_EXPOSED_ENTITIES),
         TEMPLATE_KEY_TOOLS: manager.get_object_by(TEMPLATE_KEY_TOOLS),
         TEMPLATE_KEY_TOOLS_PROMPT: manager.get_object_by(TEMPLATE_KEY_TOOLS_PROMPT),
+        TEMPLATE_KEY_SERVICES: manager.get_object_by(TEMPLATE_KEY_SERVICES),
+        TEMPLATE_KEY_SCRIPTS: manager.get_object_by(TEMPLATE_KEY_SCRIPTS),
     }
 
     variables[TEMPLATE_KEY_ALL_VARIABLES] = variables.copy()

@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [SemVer](https://semver.org).
 
 ---
+## [1.7.0] - 2025-12-09
+
+### Added
+- News variables for prompts:
+  - `tools` list of tools
+  - `tools_prompt` Prompt injected when using `Allow control` in the agent.
+  - `services` list of services
+  - `scripts` list of scripts 
+  - `all_variables` dict containing the VALUE of all variables available through the integration
+
+---
 ## [1.6.0] - 2025-12-01
 
 ### Fix
