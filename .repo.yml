@@ -13,7 +13,7 @@ repository:
     - home-assistant
     - homeassistant-integration
     - hacs-integration
-  website:
+  website: https://my.home-assistant.io/redirect/hacs_repository/?owner=alves-dev&repository=stackspot-homeassistant&category=integration
 
 project:
   status: development
