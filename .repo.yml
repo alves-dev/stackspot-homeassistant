@@ -1,0 +1,27 @@
+schema: v1
+
+repository:
+  title: StackSpot HomeAssistant
+  description: StackSpot AI Integration with Home Assistant
+  license: GPL-3
+  type: code
+  topics:
+    - python
+    - ai
+    - ai-agent
+    - stackspot
+    - homeassistant
+    - homeassistant-integration
+    - hacs-integration
+  website: https://my.home-assistant.io/redirect/hacs_repository/?owner=alves-dev&repository=stackspot-homeassistant&category=integration
+
+project:
+  status: development
+  stack:
+    language: python
+    framework:
+    database:
+    protocols:
+    tools:
+      - home-assistant
+      - stackspot

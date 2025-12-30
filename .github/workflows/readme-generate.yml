@@ -1,0 +1,13 @@
+name: "[PROD] Auto Generate Readme"
+
+on:
+  push:
+    branches: main
+
+jobs:
+  tasks:
+    uses: alves-dev/actions/.github/workflows/readme-generate.yml@latest
+    with:
+      repo-name: ${{ github.repository }}
+    secrets:
+      PERSONAL_GITHUB_TOKEN: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
