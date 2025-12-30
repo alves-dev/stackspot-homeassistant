@@ -10,7 +10,7 @@ repository:
     - ai
     - ai-agent
     - stackspot
-    - home-assistant
+    - homeassistant
     - homeassistant-integration
     - hacs-integration
   website: https://my.home-assistant.io/redirect/hacs_repository/?owner=alves-dev&repository=stackspot-homeassistant&category=integration
