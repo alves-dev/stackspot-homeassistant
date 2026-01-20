@@ -4,6 +4,7 @@ import unicodedata
 from pathlib import Path
 from typing import Any
 
+import aiofiles
 import yaml
 from homeassistant.auth.models import User
 from homeassistant.components.conversation import ConversationInput
@@ -115,8 +116,11 @@ async def load_scripts_from_yaml(hass: HomeAssistant):
             _LOGGER.warning(f"File scripts.yaml not found in {scripts_file}")
             return scripts_list
 
-        with open(scripts_file, 'r', encoding='utf-8') as file:
-            scripts_data = yaml.safe_load(file) or {}
+        data = None
+        async with aiofiles.open(scripts_file, 'r', encoding='utf-8') as file:
+            data = await file.read()
+
+        scripts_data = yaml.safe_load(data) or {}
 
         registry = entity_registry.async_get(hass)
 
@@ -131,8 +135,9 @@ async def load_scripts_from_yaml(hass: HomeAssistant):
             }
 
             entry = registry.entities.get(entity_id)
-            script_dict['aliases'] = list(entry.aliases)
-            script_dict['labels'] = entry.as_partial_dict.get('labels', [])
+            if entry is not None:
+                script_dict['aliases'] = list(entry.aliases)
+                script_dict['labels'] = entry.as_partial_dict.get('labels', [])
 
             scripts_list.append(script_dict)
 
@@ -141,7 +146,7 @@ async def load_scripts_from_yaml(hass: HomeAssistant):
         _LOGGER.info(f'Scripts from YAML loaded! Found {len(scripts_list)} scripts.')
 
     except Exception as e:
-        _LOGGER.error(f"Erro ao ler scripts.yaml: {e}")
+        _LOGGER.error(f"Error reading scripts.yaml: {e}")
 
 
 async def load_services(hass: HomeAssistant):

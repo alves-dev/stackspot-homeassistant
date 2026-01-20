@@ -4,12 +4,13 @@ version = "0.1.0"
 description = "Integration StackSpot AI with Home Assistant"
 requires-python = ">=3.13.5"
 dependencies = [
-    "homeassistant>=2025.11.3",
+    "aiofiles==24.1.0",
+    "homeassistant>=2026.1.2",
 ]
 
 [dependency-groups]
 dev = [
     "hassil>=3.4.0",
-    "home-assistant-intents>=2025.11.24",
-    "pytest-homeassistant-custom-component>=0.13.297",
+    "home-assistant-intents>=2026.1.6",
+    "pytest-homeassistant-custom-component>=0.13.307",
 ]

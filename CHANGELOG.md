@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [SemVer](https://semver.org).
 
 ---
+## [1.8.0] - 2026-01-20
+
+### fix
+- Fix [issue 24](https://github.com/alves-dev/stackspot-homeassistant/issues/24)
+  - Problem reading the scripts file
+  - Improved file readability, using `aiofiles` async method
+
+---
 ## [1.7.0] - 2025-12-09
 
 ### Added
