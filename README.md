@@ -190,6 +190,6 @@ template_version=v1
 
 <p align="center">
   <sub style="color:#94A3B8;">
-    Atualizado em 2025-12-30 13:02
+    Atualizado em 2026-01-20 14:28
   </sub>
 </p>
