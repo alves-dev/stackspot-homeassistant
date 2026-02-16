@@ -165,6 +165,8 @@ template_name=footer-default
 template_version=v1
 -->
 
+---
+
 <p align="center">
   <img src="https://img.shields.io/badge/licença-GPL%203-3B82F6.svg" alt="license"/>
 </p>
@@ -190,6 +192,6 @@ template_version=v1
 
 <p align="center">
   <sub style="color:#94A3B8;">
-    Atualizado em 2026-01-20 14:28
+    Atualizado em 2026-02-16 09:43
   </sub>
 </p>
