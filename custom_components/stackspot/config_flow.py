@@ -51,6 +51,10 @@ from .const import (
     CONF_AGENT_ALLOW_CONTROL,
     CONF_AGENT_ALLOW_CONTROL_DEFAULT,
     CONF_LLM_MODEL,
+    PLACEHOLDER_KS_URL,
+    CONF_KS_BASE_URL,
+    PLACEHOLDER_KS_DOC_URL,
+    CONF_KS_DOC_URL,
 )
 from .util import create_slug
 
@@ -316,7 +320,10 @@ class KSSubentryFlow(ConfigSubentryFlow):
 
         return self.async_show_form(
             step_id="user",
-            data_schema=_get_schema_subentry_ks()
+            data_schema=_get_schema_subentry_ks(),
+            description_placeholders={
+                PLACEHOLDER_KS_DOC_URL: CONF_KS_DOC_URL
+            }
         )
 
     async def async_step_reconfigure(
@@ -354,6 +361,6 @@ class KSSubentryFlow(ConfigSubentryFlow):
             data_schema=data_schema,
             description_placeholders={
                 CONF_KS_NAME: current_data.get(CONF_KS_NAME, STATE_UNKNOWN),
-                CONF_KS_SLUG: slug
+                PLACEHOLDER_KS_URL: CONF_KS_BASE_URL.replace('{ks_slug}', slug)
             }
         )

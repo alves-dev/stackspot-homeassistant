@@ -116,7 +116,7 @@
       "step": {
         "user": {
           "title": "StackSpot - New Knowledge Source",
-          "description": "KS are used to give agents more context, please read: https://ai.stackspot.com/docs/knowledge-source/ks \nAfter creating KS you should access Stackspot there and link it to your agent",
+          "description": "KS are used to give agents more context, please read: {ks_doc_url} \nAfter creating KS you should access Stackspot there and link it to your agent",
           "data": {
             "ks_name": "KS name",
             "ks_template": "Template",
@@ -129,7 +129,7 @@
         },
         "reconfigure": {
           "title": "StackSpot - Change KS {ks_name}",
-          "description": "Access the KS: https://ai.stackspot.com/knowledge-sources/{ks_slug}?tabIndex=0",
+          "description": "Access the KS: {ks_url}",
           "data": {
             "ks_name": "KS name",
             "ks_template": "Template",
