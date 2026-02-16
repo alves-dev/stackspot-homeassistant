@@ -42,6 +42,8 @@ CONF_AI_TASK_PROMPT_DEFAULT = (
 )
 
 # CONF KS
+CONF_KS_BASE_URL = 'https://ai.stackspot.com/knowledge-sources/{ks_slug}?tabIndex=0'
+PLACEHOLDER_KS_URL = 'ks_url'
 CONF_KS_NAME = 'ks_name'
 CONF_KS_NAME_DEFAULT = 'HA: Entities'
 CONF_KS_SLUG = 'ks_slug'

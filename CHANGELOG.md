@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [SemVer](https://semver.org).
 
 ---
+## [1.8.1] - 2026-02-16
+
+### fix
+- Fix action hassfest
+  `[TRANSLATIONS] Invalid translations/en.json: the string should not contain URLs, please use description placeholders instead for dictionary value @ data['config_subentries']['knowledge_source']['step']['reconfigure']['description']`
+  - Removing URLs from the [lang].json file
+
+---
 ## [1.8.0] - 2026-01-20
 
 ### fix

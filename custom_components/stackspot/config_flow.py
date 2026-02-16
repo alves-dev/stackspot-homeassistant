@@ -51,6 +51,8 @@ from .const import (
     CONF_AGENT_ALLOW_CONTROL,
     CONF_AGENT_ALLOW_CONTROL_DEFAULT,
     CONF_LLM_MODEL,
+    PLACEHOLDER_KS_URL,
+    CONF_KS_BASE_URL,
 )
 from .util import create_slug
 
@@ -354,6 +356,6 @@ class KSSubentryFlow(ConfigSubentryFlow):
             data_schema=data_schema,
             description_placeholders={
                 CONF_KS_NAME: current_data.get(CONF_KS_NAME, STATE_UNKNOWN),
-                CONF_KS_SLUG: slug
+                PLACEHOLDER_KS_URL: CONF_KS_BASE_URL.replace('{ks_slug}', slug)
             }
         )

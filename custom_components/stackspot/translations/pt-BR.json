@@ -129,7 +129,7 @@
         },
         "reconfigure": {
           "title": "StackSpot - Alterando o KS {ks_name}",
-          "description": "Acesse o KS: https://ai.stackspot.com/knowledge-sources/{ks_slug}?tabindex=0",
+          "description": "Acesse o KS: {ks_url}",
           "data": {
             "ks_name": "Nome do KS",
             "ks_template": "Template",
