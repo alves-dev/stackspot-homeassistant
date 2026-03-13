@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [SemVer](https://semver.org).
 
 ---
+## [1.8.2] - 2026-03-13
+
+### warning
+- StackSpot freemium accounts will be discontinued on April 6th, 2026
+
+---
 ## [1.8.1] - 2026-02-16
 
 ### fix

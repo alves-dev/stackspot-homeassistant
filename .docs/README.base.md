@@ -5,6 +5,11 @@
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=alves-dev&repository=stackspot-homeassistant&category=integration)
 
+> ⚠️️ **CAUTION** ⚠️  
+> **StackSpot freemium accounts will be discontinued on April 6th, 2026.**
+>
+> Please back up your data and prepare for the transition.
+
 ## 📋 Changelog
 
 See all changes in [CHANGELOG.md](./CHANGELOG.md)
